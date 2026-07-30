@@ -10,10 +10,10 @@ import {
 } from "lucide-react";
 
 const INCLUDED_ANALISE = [
-  "Triagem documental do que você já possui",
-  "Validação da linha de descendência",
-  "Buscas primárias em bases indexadas",
-  "Parecer de viabilidade da pesquisa",
+  "Investigação exaustiva em cartórios e paróquias brasileiros",
+  "Levantamento de certidões de nascimento, casamento e óbito",
+  "Cruzamento de dados de imigração e registros de entrada",
+  "Relatório completo do mapeamento da linhagem familiar",
 ];
 
 const INCLUDED_SUCESSO = [
@@ -31,15 +31,15 @@ export function Pricing() {
         <div className="mx-auto max-w-2xl text-center">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-gold/10 px-3 py-1 text-xs font-600 uppercase tracking-[0.18em] text-gold-dark">
             <Handshake className="size-3.5" />
-            Risco Compartilhado
+            Duas Etapas Distintas
           </span>
           <h2 className="mt-4 font-serif text-3xl font-700 text-navy sm:text-4xl">
-            Modelo Transparente de Cobrança
+            Como Funciona Nossa Cobrança
           </h2>
           <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-            Sem surpresas. Nosso modelo divide a responsabilidade: você banca
-            apenas a triagem inicial e o resto só é cobrado se entregarmos o que
-            prometemos.
+            Nosso trabalho é dividido em duas etapas claras: primeiro mapeamos toda
+            sua linhagem no Brasil (etapa remunerada), depois buscamos a certidão na
+            Europa (só cobrada se encontrarmos).
           </p>
           <div className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-gold to-transparent" />
         </div>
@@ -54,10 +54,10 @@ export function Pricing() {
               </span>
               <div>
                 <h3 className="font-serif text-lg font-600 text-navy">
-                  Taxa de Análise Inicial
+                  Pesquisa &amp; Mapeamento no Brasil
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  Triagem &amp; viabilidade
+                  Investigação completa no território nacional
                 </p>
               </div>
             </div>
@@ -70,8 +70,10 @@ export function Pricing() {
               <span className="text-sm text-muted-foreground">/ fixo</span>
             </div>
             <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-              Valor simbólico que cobre o tempo da equipe de triagem documental
-              e as buscas primárias indexadas.
+              Valor que remunera todo o trabalho investigativo de reconstrução da
+              sua linha de descendência no Brasil. Este valor{" "}
+              <span className="font-600 text-navy">não é reembolsável</span>,
+              pois corresponde a um serviço efetivamente prestado e entregue.
             </p>
 
             <ul className="mt-6 space-y-3">
@@ -108,10 +110,10 @@ export function Pricing() {
               </span>
               <div>
                 <h3 className="font-serif text-lg font-600 text-navy">
-                  Taxa de Sucesso
+                  Taxa de Sucesso na Europa
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  Cobrada apenas com resultado
+                  Cobrada apenas se localizarmos o documento
                 </p>
               </div>
             </div>
@@ -125,9 +127,11 @@ export function Pricing() {
               </span>
             </div>
             <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-              Cobrada <span className="font-600 text-navy">APENAS</span> se o
-              livro ou registro do ancestral for efetivamente localizado e a
-              certidão emitida.
+              Cobrada{" "}
+              <span className="font-600 text-navy">APENAS</span> se a certidão
+              oficial do seu ancestral for localizada no arquivo ou órgão europeu
+              competente. Se não encontrarmos, esta taxa{" "}
+              <span className="font-600 text-green-700">não é cobrada</span>.
             </p>
 
             <ul className="mt-6 space-y-3">
@@ -156,9 +160,10 @@ export function Pricing() {
         <div className="mx-auto mt-10 flex max-w-4xl items-center justify-center gap-2 rounded-xl border border-border bg-cream px-5 py-4 text-center">
           <ShieldCheck className="size-5 shrink-0 text-gold-dark" />
           <p className="text-sm text-muted-foreground">
-            <span className="font-600 text-navy">Garantia de transparência:</span>{" "}
-            relatório completo da pesquisa é entregue independentemente do
-            resultado. Sem letras miúdas.
+            <span className="font-600 text-navy">Transparência total:</span>{" "}
+            você recebe o relatório completo do mapeamento feito no Brasil,
+            independentemente de prosseguirmos para a busca na Europa. Sem letras
+            miúdas.
           </p>
         </div>
       </div>

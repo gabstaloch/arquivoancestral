@@ -32,20 +32,21 @@ export function Hero() {
           <div className="lg:col-span-7">
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold/10 px-3.5 py-1.5 text-xs font-medium tracking-wide text-gold-light backdrop-blur-sm">
               <FileSearch className="size-3.5" />
-              Pesquisa Genealógica &amp; Arquivos Europeus
+              Pesquisa Documental no Brasil &amp; Arquivos Europeus
             </div>
 
             <h1 className="font-serif text-3xl font-700 leading-tight sm:text-4xl lg:text-5xl xl:text-[3.4rem]">
-              Encontramos a Certidão do seu{" "}
-              <span className="text-gold-gradient">Ancestral Europeu</span> no
-              Exterior
+              Mapeamos sua Linhagem Familiar no{" "}
+              <span className="text-gold-gradient">Brasil</span> e Localizamos sua
+              Certidão na Europa
             </h1>
 
             <p className="mt-5 max-w-xl text-base leading-relaxed text-white/80 sm:text-lg">
-              Especialistas em pesquisa genealógica e busca de documentos na{" "}
-              <span className="font-medium text-white">Alemanha, Itália e Leste
-              Europeu</span>. Descubra sua linhagem e garanta seu direito à
-              cidadania.
+              Primeiro reconstruímos a linha de descendência da sua família no Brasil —
+              identificando cartórios, paróquias e registros de imigração. Com esse
+              mapeamento completo, buscamos a certidão original do seu ancestral na{" "}
+              <span className="font-medium text-white">Alemanha, Itália ou Leste
+              Europeu</span>.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -81,10 +82,11 @@ export function Hero() {
               <ShieldCheck className="mt-0.5 size-5 shrink-0 text-gold" />
               <p className="text-sm leading-snug text-white/85">
                 <span className="font-600 text-white">
-                  Método com Taxa de Sucesso:
+                  Modelo em Duas Etapas:
                 </span>{" "}
-                você só paga o valor final se o registro do seu ancestral for
-                efetivamente localizado.
+                a primeira etapa (R$ 250) cobre toda a investigação no Brasil. A
+                segunda (Taxa de Sucesso) só é cobrada se localizarmos a certidão
+                europeia.
               </p>
             </div>
           </div>
