@@ -35,10 +35,10 @@ export function SiteHeader() {
           : "bg-transparent"
       )}
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:h-20 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-24 max-w-7xl items-center justify-between px-4 sm:h-28 sm:px-6 lg:px-8">
         {/* Brand com Logo */}
-        <a href="#topo" className="flex items-center gap-3 group">
-          <div className="relative size-[144px] shrink-0 sm:size-[168px]">
+        <a href="#topo" className="flex items-center gap-3 group -mt-2">
+          <div className="relative size-[100px] shrink-0 sm:size-[120px]">
             <Image
               src="/logo-arquivo-ancestral.png"
               alt={`${SITE.brand} - Logo`}

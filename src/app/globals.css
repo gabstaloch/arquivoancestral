@@ -178,7 +178,7 @@
 /* Smooth scroll for in-page navigation */
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 5rem;
+  scroll-padding-top: 7.5rem;
 }
 
 /* Decorative paper grain for hero overlay */
