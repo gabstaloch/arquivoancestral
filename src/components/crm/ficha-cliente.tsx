@@ -82,16 +82,18 @@ function formatarData(valor: string): string {
   return `${limitados.slice(0, 2)}/${limitados.slice(2, 4)}/${limitados.slice(4)}`;
 }
 
-// Person card for family tree (FamilySearch style)
+// Person card for family tree (FamilySearch style) - ALL SAME SIZE
 function PersonCard({ 
   no, 
   onEdit,
-  compact = false 
+  showTooltip = true
 }: { 
   no: NoArvore; 
   onEdit: (no: NoArvore) => void;
-  compact?: boolean;
+  showTooltip?: boolean;
 }) {
+  const [hovered, setHovered] = useState(false);
+  
   const relacaoLabels: Record<string, string> = {
     requerente: "Requerente",
     pai: "Pai",
@@ -109,110 +111,212 @@ function PersonCard({
   const anosVida = anoNasc ? (anoObito ? `${anoNasc}-${anoObito}` : `${anoNasc}-`) : '';
 
   return (
-    <Card 
-      className={`
-        cursor-pointer transition-all hover:shadow-lg hover:border-navy/40
-        border border-navy/20 bg-white
-        ${compact ? 'w-[140px]' : 'w-[160px]'}
-      `}
-      onClick={() => onEdit(no)}
+    <div 
+      className="relative group"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
-      <CardContent className={`p-3 ${compact ? 'p-2.5' : ''} text-center`}>
-        {/* Avatar placeholder */}
-        <div className={`
-          mx-auto rounded-full bg-navy/5 flex items-center justify-center
-          ${compact ? 'size-9' : 'size-11'}
-        `}>
-          <User className={`${compact ? 'size-4' : 'size-5'} text-navy/60`} />
-        </div>
-        
-        {/* Name */}
-        <h4 className={`font-medium text-navy mt-2 truncate ${compact ? 'text-xs' : 'text-sm'}`}>
-          {no.nomeCompleto || 'Adicionar'}
-        </h4>
-        
-        {/* Years */}
-        {anosVida && (
-          <p className={`text-muted-foreground ${compact ? 'text-[10px]' : 'text-xs'}`}>
-            {anosVida}
-          </p>
-        )}
+      <Card 
+        className={`
+          cursor-pointer transition-all duration-200 
+          hover:shadow-xl hover:border-navy/50 hover:-translate-y-1
+          border border-navy/20 bg-white w-[155px]
+        `}
+        onClick={() => onEdit(no)}
+      >
+        <CardContent className="p-3 text-center">
+          {/* Avatar placeholder - SAME SIZE FOR ALL */}
+          <div className="mx-auto size-11 rounded-full bg-navy/5 flex items-center justify-center">
+            <User className="size-5 text-navy/60" />
+          </div>
+          
+          {/* Name */}
+          <h4 className="font-medium text-navy mt-2 truncate text-sm">
+            {no.nomeCompleto || 'Adicionar'}
+          </h4>
+          
+          {/* Years */}
+          {anosVida && (
+            <p className="text-muted-foreground text-xs">
+              {anosVida}
+            </p>
+          )}
 
-        {/* Status badge */}
-        <Badge 
-          variant="outline" 
-          className={`
-            mt-1.5 text-[9px] border-current
-            ${no.statusRegistro === 'localizado' ? 'text-green-700 border-green-300 bg-green-50' :
-              no.statusRegistro === 'pendente' ? 'text-yellow-700 border-yellow-300 bg-yellow-50' :
-              no.statusRegistro === 'em_busca' ? 'text-blue-700 border-blue-300 bg-blue-50' :
-              'text-gray-500 border-gray-300 bg-gray-50'}
-          `}
-        >
-          {getStatusRegistroLabel(no.statusRegistro)}
-        </Badge>
+          {/* Status badge */}
+          <Badge 
+            variant="outline" 
+            className={`
+              mt-1.5 text-[9px] border-current
+              ${no.statusRegistro === 'localizado' ? 'text-green-700 border-green-300 bg-green-50' :
+                no.statusRegistro === 'pendente' ? 'text-yellow-700 border-yellow-300 bg-yellow-50' :
+                no.statusRegistro === 'em_busca' ? 'text-blue-700 border-blue-300 bg-blue-50' :
+                'text-gray-500 border-gray-300 bg-gray-50'}
+            `}
+          >
+            {getStatusRegistroLabel(no.statusRegistro)}
+          </Badge>
+        </CardContent>
+      </Card>
+
+      {/* Detailed Tooltip on Hover */}
+      {showTooltip && hovered && (
+        <div className="absolute z-50 left-full ml-3 top-0 w-[280px] shadow-2xl rounded-xl border border-navy/15 bg-white p-4 animate-in fade-in zoom-in-95 duration-200">
+          {/* Header */}
+          <div className="flex items-start gap-3 pb-3 border-b border-navy/10">
+            <div className="size-12 rounded-full bg-navy/10 flex items-center justify-center shrink-0">
+              <User className="size-6 text-navy/70" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h4 className="font-semibold text-navy">{no.nomeCompleto}</h4>
+              <Badge variant="outline" className="mt-1 text-[10px]">
+                {relacaoLabels[no.relacao] || no.relacao}
+              </Badge>
+            </div>
+          </div>
+
+          {/* Civil Registry Details */}
+          <div className="mt-3 space-y-2.5 text-sm">
+            {/* Birth info */}
+            {no.nascimento?.data && (
+              <div className="flex items-start gap-2">
+                <CalendarDays className="size-4 text-green-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium text-green-800">Nascimento</p>
+                  <p className="text-green-700">{no.nascimento.data}{no.nascimento.local ? ` - ${no.nascimento.local}` : ''}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Marriage info */}
+            {no.casamento?.data && (
+              <div className="flex items-start gap-2">
+                <FileText className="size-4 text-pink-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium text-pink-800">Casamento</p>
+                  <p className="text-pink-700">{no.casamento.data}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Death info */}
+            {no.obito?.data && (
+              <div className="flex items-start gap-2">
+                <AlertCircle className="size-4 text-gray-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium text-gray-700">Óbito</p>
+                  <p className="text-gray-600">{no.obito.data}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Name variations */}
+            {no.variacoesGrafia && (
+              <div className="flex items-start gap-2">
+                <MapPin className="size-4 text-purple-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium text-purple-800">Variações de Grafia</p>
+                  <p className="text-purple-700 italic">{no.variacoesGrafia}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Annotations */}
+            {no.anotacoes && (
+              <div className="flex items-start gap-2">
+                <FileText className="size-4 text-orange-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium text-orange-800">Anotações</p>
+                  <p className="text-orange-700 text-xs">{no.anotacoes}</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Footer - Status */}
+          <div className="mt-3 pt-3 border-t border-navy/10">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">Status do Registro:</span>
+              <Badge className={`text-[10px] ${
+                no.statusRegistro === 'localizado' ? 'bg-green-100 text-green-800' :
+                no.statusRegistro === 'pendente' ? 'bg-yellow-100 text-yellow-800' :
+                no.statusRegistro === 'em_busca' ? 'bg-blue-100 text-blue-800' :
+                'bg-gray-100 text-gray-800'
+              }`}>
+                {getStatusRegistroLabel(no.statusRegistro)}
+              </Badge>
+            </div>
+          </div>
+
+          {/* Click to edit hint */}
+          <p className="text-[10px] text-center text-muted-foreground mt-3 pt-2 border-t border-navy/5">
+            Clique para editar este registro
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Couple row (husband and wife side by side) - SAME SIZE
+function CoupleRow({ 
+  homem, 
+  mulher, 
+  onEdit 
+}: { 
+  homem?: NoArvore; 
+  mulher?: NoArvore; 
+  onEdit: (no: NoArvore) => void;
+}) {
+  return (
+    <div className="flex items-center justify-center gap-1.5">
+      {homem ? (
+        <PersonCard no={homem} onEdit={onEdit} />
+      ) : (
+        <EmptyCard label="Pai" />
+      )}
+      
+      {(homem || mulher) && (
+        <div className="w-5 h-px bg-gradient-to-r from-navy/30 to-transparent rounded" />
+      )}
+      
+      {mulher ? (
+        <PersonCard no={mulher} onEdit={onEdit} />
+      ) : (
+        <EmptyCard label="Mãe" />
+      )}
+    </div>
+  );
+}
+
+// Empty card placeholder
+function EmptyCard({ label }: { label: string }) {
+  return (
+    <Card className="border-dashed border-2 border-navy/20 bg-navy/[0.02] w-[155px] opacity-60">
+      <CardContent className="p-3 text-center">
+        <div className="mx-auto size-11 rounded-full bg-navy/5 flex items-center justify-center border-2 border-dashed border-navy/20">
+          <Plus className="size-4 text-navy/30" />
+        </div>
+        <p className="text-xs text-navy/40 mt-2 font-medium">{label}</p>
       </CardContent>
     </Card>
   );
 }
 
-// Couple row (husband and wife side by side)
-function CoupleRow({ 
-  homem, 
-  mulher, 
-  onEdit,
-  showConnector = true
+// Curved SVG Lineage Path Component
+function LineagePath({ 
+  fromId, 
+  toIds, 
+  curveIntensity = 40 
 }: { 
-  homem?: NoArvore; 
-  mulher?: NoArvore; 
-  onEdit: (no: NoArvore) => void;
-  showConnector?: boolean;
+  fromId: string; 
+  toIds: string[];
+  curveIntensity?: number;
 }) {
-  return (
-    <div className="flex items-center justify-center gap-2">
-      {homem ? (
-        <PersonCard no={homem} onEdit={onEdit} />
-      ) : (
-        <EmptySlot label="Adicionar Pai/Marido" compact />
-      )}
-      
-      {showConnector && (homem || mulher) && (
-        <div className="w-6 h-px bg-navy/30" />
-      )}
-      
-      {mulher ? (
-        <PersonCard no={mulher} onEdit={onEdit} compact />
-      ) : (
-        <EmptySlot label="Adicionar Mãe/Esposa" compact />
-      )}
-    </div>
-  );
+  // This will be used to draw curved lines between generations
+  return null; // Lines are drawn in the main FamilyTree component using SVG overlay
 }
 
-// Empty slot for adding missing family members
-function EmptySlot({ label, compact }: { label: string; compact?: boolean }) {
-  return null; // Hidden by default - can be shown if needed for add functionality
-}
-
-// Vertical connector line
-function ConnectorLine({ height = "h-8" }: { height?: string }) {
-  return <div className={`w-px ${height} bg-navy/25 mx-auto`} />;
-}
-
-// Horizontal connector with branches (┬─ ─┴─ ┬)
-function BranchConnector() {
-  return (
-    <div className="flex items-center justify-center w-full max-w-md mx-auto">
-      <div className="flex-1 h-px bg-navy/25" />
-      <div className="w-px h-3 bg-navy/25" />
-      <div className="w-24 h-px bg-navy/25" />
-      <div className="w-px h-3 bg-navy/25" />
-      <div className="flex-1 h-px bg-navy/25" />
-    </div>
-  );
-}
-
-// Main Family Tree Component (FamilySearch style - Bottom to Top)
+// Main Family Tree Component with SVG curved lines
 function FamilyTree({ 
   nos, 
   onEdit, 
@@ -232,77 +336,135 @@ function FamilyTree({
   const avoMaterna = nos.find(n => n.relacao === 'avo_materna');
   const ancestrais = nos.filter(n => n.relacao === 'ancestral');
 
+  const hasParents = !!(pai || mae);
+  const hasGrandparents = !!(avoPaterno || avoPaterna || avoMaterno || avoMaterna);
+  const hasAncestors = ancestrais.length > 0;
+
   return (
-    <div className="py-8 overflow-x-auto">
-      <div className="min-w-[400px] flex flex-col-reverse items-center">
+    <div className="py-8 overflow-x-auto relative">
+      <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" style={{ minHeight: '500px' }}>
+        <defs>
+          {/* Gradient for lineage lines */}
+          <linearGradient id="lineageGradient" x1="0%" y1="100%" x2="0%" y2="0%">
+            <stop offset="0%" stopColor="#1A2B4C" stopOpacity="0.15" />
+            <stop offset="50%" stopColor="#1A2B4C" stopOpacity="0.25" />
+            <stop offset="100%" stopColor="#1A2B4C" stopOpacity="0.15" />
+          </linearGradient>
+          {/* Filter for subtle glow effect */}
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+            <feMerge>
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+        
+        {/* Curved path from Requerente to Parents */}
+        {hasParents && (
+          <>
+            {/* Main vertical curve up from requerente */}
+            <path
+              d="M 160 140 Q 160 170, 120 190 T 80 220"
+              stroke="url(#lineageGradient)"
+              strokeWidth="2"
+              fill="none"
+              strokeLinecap="round"
+              filter="url(#glow)"
+              className="animate-pulse-slow"
+            />
+            <path
+              d="M 160 140 Q 160 170, 200 190 T 240 220"
+              stroke="url(#lineageGradient)"
+              strokeWidth="2"
+              fill="none"
+              strokeLinecap="round"
+              filter="url(#glow)"
+              className="animate-pulse-slow"
+            />
+          </>
+        )}
+        
+        {/* Curved paths from Parents to Grandparents */}
+        {hasGrandparents && hasParents && (
+          <>
+            {/* Left side - Pai to Avós Paternos */}
+            <path
+              d="M 80 310 Q 80 340, 40 370 T 0 400"
+              stroke="url(#lineageGradient)"
+              strokeWidth="1.5"
+              fill="none"
+              strokeLinecap="round"
+              opacity="0.7"
+            />
+            <path
+              d="M 80 310 Q 80 340, 110 370 T 140 400"
+              stroke="url(#lineageGradient)"
+              strokeWidth="1.5"
+              fill="none"
+              strokeLinecap="round"
+              opacity="0.7"
+            />
+            
+            {/* Right side - Mãe to Avós Maternos */}
+            <path
+              d="M 240 310 Q 240 340, 210 370 T 180 400"
+              stroke="url(#lineageGradient)"
+              strokeWidth="1.5"
+              fill="none"
+              strokeLinecap="round"
+              opacity="0.7"
+            />
+            <path
+              d="M 240 310 Q 240 340, 270 370 T 300 400"
+              stroke="url(#lineageGradient)"
+              strokeWidth="1.5"
+              fill="none"
+              strokeLinecap="round"
+              opacity="0.7"
+            />
+          </>
+        )}
+      </svg>
+
+      <div className="relative z-10 min-w-[450px] flex flex-col-reverse items-center gap-6">
         
         {/* GENERATION 0: Requerente (BOTTOM) */}
-        <div className="relative">
+        <div className="relative" id="gen-requerente">
           {requerente ? (
             <PersonCard no={requerente} onEdit={onEdit} />
           ) : (
-            <Card className="cursor-pointer border-dashed border-2 border-navy/30 bg-navy/5 w-[160px]" onClick={() => onAdd('requerente')}>
+            <Card 
+              className="cursor-pointer border-dashed border-2 border-navy/30 bg-navy/5 w-[155px] hover:bg-navy/10 transition-colors" 
+              onClick={() => onAdd('requerente')}
+            >
               <CardContent className="p-4 text-center">
                 <User className="size-6 mx-auto text-navy/40" />
                 <p className="text-sm font-medium text-navy/60 mt-2">Requerente</p>
+                <p className="text-[10px] text-navy/40">Clique para adicionar</p>
               </CardContent>
             </Card>
           )}
         </div>
 
-        {/* Connector to parents */}
-        {(pai || mae) && (
-          <>
-            <ConnectorLine height="h-6" />
-            <BranchConnector />
-            <ConnectorLine height="h-6" />
-          </>
-        )}
-
         {/* GENERATION 1: Parents */}
-        {(pai || mae) && (
-          <CoupleRow homem={pai} mulher={mae} onEdit={onEdit} />
-        )}
-
-        {/* Connectors to grandparents */}
-        {(avoPaterno || avoPaterna || avoMaterno || avoMaterna) && (
-          <>
-            <ConnectorLine height="h-6" />
-            
-            {/* Double branch for both sides */}
-            <div className="flex items-center justify-center w-full max-w-lg mx-auto">
-              {/* Left branch (paternal) */}
-              <div className="flex-1 flex items-center">
-                <div className="flex-1 h-px bg-navy/25" />
-                <div className="w-px h-3 bg-navy/25" />
-                <div className="w-16 h-px bg-navy/25" />
-              </div>
-              
-              {/* Center gap */}
-              <div className="w-12" />
-              
-              {/* Right branch (maternal) */}
-              <div className="flex-1 flex items-center">
-                <div className="w-16 h-px bg-navy/25" />
-                <div className="w-px h-3 bg-navy/25" />
-                <div className="flex-1 h-px bg-navy/25" />
-              </div>
-            </div>
-            
-            <ConnectorLine height="h-6" />
-          </>
+        {hasParents && (
+          <div className="relative" id="gen-parents">
+            <CoupleRow homem={pai} mulher={mae} onEdit={onEdit} />
+          </div>
         )}
 
         {/* GENERATION 2: Grandparents */}
-        {(avoPaterno || avoPaterna || avoMaterno || avoMaterna) && (
-          <div className="flex items-start justify-center gap-8 w-full max-w-lg">
+        {hasGrandparents && (
+          <div className="relative flex items-start justify-center gap-6 w-full max-w-lg" id="gen-grandparents">
             {/* Paternal grandparents */}
             <div className="flex flex-col items-center">
               {(avoPaterno || avoPaterna) ? (
-                <CoupleRow homem={avoPaterno} mulher={avoPaterna} onEdit={onEdit} showConnector={false} />
+                <CoupleRow homem={avoPaterno} mulher={avoPaterna} onEdit={onEdit} />
               ) : (
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground">Avós Paternos</p>
+                <div className="flex gap-1.5">
+                  <EmptyCard label="Avô Pat." />
+                  <EmptyCard label="Avó Pat." />
                 </div>
               )}
             </div>
@@ -310,10 +472,11 @@ function FamilyTree({
             {/* Maternal grandparents */}
             <div className="flex flex-col items-center">
               {(avoMaterno || avoMaterna) ? (
-                <CoupleRow homem={avoMaterno} mulher={avoMaterna} onEdit={onEdit} showConnector={false} />
+                <CoupleRow homem={avoMaterno} mulher={avoMaterna} onEdit={onEdit} />
               ) : (
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground">Avós Maternos</p>
+                <div className="flex gap-1.5">
+                  <EmptyCard label="Avô Mat." />
+                  <EmptyCard label="Avó Mat." />
                 </div>
               )}
             </div>
@@ -321,20 +484,17 @@ function FamilyTree({
         )}
 
         {/* Ancestors section */}
-        {ancestrais.length > 0 && (
-          <>
-            <ConnectorLine height="h-8" />
-            <div className="flex flex-col items-center gap-3 w-full max-w-xl">
-              <p className="text-xs font-semibold uppercase tracking-wider text-navy/60">
-                Ancestrais Europeus
-              </p>
-              <div className="flex flex-wrap justify-center gap-3">
-                {ancestrais.map(ancestral => (
-                  <PersonCard key={ancestral.id} no={ancestral} onEdit={onEdit} compact />
-                ))}
-              </div>
+        {hasAncestors && (
+          <div className="flex flex-col items-center gap-3 w-full max-w-xl" id="gen-ancestors">
+            <p className="text-xs font-semibold uppercase tracking-wider text-navy/50">
+              Ancestrais Europeus
+            </p>
+            <div className="flex flex-wrap justify-center gap-3">
+              {ancestrais.map(ancestral => (
+                <PersonCard key={ancestral.id} no={ancestral} onEdit={onEdit} />
+              ))}
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>
