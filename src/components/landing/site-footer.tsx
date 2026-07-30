@@ -59,7 +59,7 @@ export function SiteFooter() {
           {/* Brand com Logo */}
           <div className="lg:col-span-4">
             <div className="flex items-center gap-3">
-              <div className="relative size-12 shrink-0 sm:size-14">
+              <div className="relative size-[144px] shrink-0 sm:size-[168px]">
                 <Image
                   src="/logo-arquivo-ancestral.png"
                   alt={`${SITE.brand} - Logo`}
