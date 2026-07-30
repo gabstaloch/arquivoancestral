@@ -57,6 +57,28 @@ export default function PainelPage() {
   const [novoEmail, setNovoEmail] = useState("");
   const [novoWhatsapp, setNovoWhatsapp] = useState("");
 
+  // Formata telefone brasileiro: 47996347286 → (47) 99634-7286
+  function formatarTelefone(valor: string): string {
+    // Remove tudo que não é dígito
+    const digitos = valor.replace(/\D/g, "");
+    
+    // Limita a 11 dígitos (DDD + 9 dígitos)
+    const limitados = digitos.slice(0, 11);
+    
+    // Aplica a máscara progressiva
+    if (limitados.length === 0) return "";
+    if (limitados.length <= 2) return `(${limitados}`;
+    if (limitados.length <= 7) return `(${limitados.slice(0, 2)}) ${limitados.slice(2)}`;
+    if (limitados.length <= 11) return `(${limitados.slice(0, 2)}) ${limitados.slice(2, 7)}-${limitados.slice(7)}`;
+    
+    return `(${limitados.slice(0, 2)}) ${limitados.slice(2, 7)}-${limitados.slice(7, 11)}`;
+  }
+
+  function handleWhatsappChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const formatado = formatarTelefone(e.target.value);
+    setNovoWhatsapp(formatado);
+  }
+
   function carregarClientes() {
     let lista = getClientes();
     
@@ -182,7 +204,8 @@ export default function PainelPage() {
                 <Input
                   placeholder="(47) 99999-9999"
                   value={novoWhatsapp}
-                  onChange={(e) => setNovoWhatsapp(e.target.value)}
+                  onChange={handleWhatsappChange}
+                  maxLength={15}
                 />
               </div>
 
