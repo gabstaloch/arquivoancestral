@@ -41,6 +41,7 @@ import {
   MapPin,
   AlertCircle,
   ExternalLink,
+  CheckCircle2,
 } from "lucide-react";
 import Image from "next/image";
 import {
@@ -82,7 +83,7 @@ function formatarData(valor: string): string {
   return `${limitados.slice(0, 2)}/${limitados.slice(2, 4)}/${limitados.slice(4)}`;
 }
 
-// Person card for family tree (FamilySearch style) - ALL SAME SIZE
+// Person card for family tree - ALL SAME SIZE with Registry Indicators
 function PersonCard({ 
   no, 
   onEdit,
@@ -109,6 +110,11 @@ function PersonCard({
   const anoNasc = no.nascimento?.data?.split('/')?.[2] || '';
   const anoObito = no.obito?.data?.split('/')?.[2] || '';
   const anosVida = anoNasc ? (anoObito ? `${anoNasc}-${anoObito}` : `${anoNasc}-`) : '';
+
+  // Check if registry data is complete
+  const hasNascimento = !!(no.nascimento?.data && no.nascimento.completo);
+  const hasCasamento = !!(no.casamento?.data && no.casamento.completo);
+  const hasObito = !!(no.obito?.data && no.obito.completo);
 
   return (
     <div 
@@ -155,12 +161,36 @@ function PersonCard({
           >
             {getStatusRegistroLabel(no.statusRegistro)}
           </Badge>
+
+          {/* Registry indicators - Show when data is complete */}
+          {(hasNascimento || hasCasamento || hasObito) && (
+            <div className="mt-2 flex flex-wrap items-center justify-center gap-1">
+              {hasNascimento && (
+                <span className="inline-flex items-center gap-0.5 text-[9px] font-medium text-green-700 bg-green-50 px-1.5 py-0.5 rounded">
+                  <CheckCircle2 className="size-2.5" />
+                  Nasc
+                </span>
+              )}
+              {hasCasamento && (
+                <span className="inline-flex items-center gap-0.5 text-[9px] font-medium text-pink-700 bg-pink-50 px-1.5 py-0.5 rounded">
+                  <CheckCircle2 className="size-2.5" />
+                  Casam
+                </span>
+              )}
+              {hasObito && (
+                <span className="inline-flex items-center gap-0.5 text-[9px] font-medium text-gray-700 bg-gray-100 px-1.5 py-0.5 rounded">
+                  <CheckCircle2 className="size-2.5" />
+                  Óbito
+                </span>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Detailed Tooltip on Hover */}
+      {/* Detailed Tooltip on Hover with Civil Registry Data */}
       {showTooltip && hovered && (
-        <div className="absolute z-50 left-full ml-3 top-0 w-[280px] shadow-2xl rounded-xl border border-navy/15 bg-white p-4 animate-in fade-in zoom-in-95 duration-200">
+        <div className="absolute z-50 left-full ml-3 top-0 w-[300px] shadow-2xl rounded-xl border border-navy/15 bg-white p-4 animate-in fade-in zoom-in-95 duration-200">
           {/* Header */}
           <div className="flex items-start gap-3 pb-3 border-b border-navy/10">
             <div className="size-12 rounded-full bg-navy/10 flex items-center justify-center shrink-0">
@@ -175,58 +205,135 @@ function PersonCard({
           </div>
 
           {/* Civil Registry Details */}
-          <div className="mt-3 space-y-2.5 text-sm">
-            {/* Birth info */}
+          <div className="mt-3 space-y-3 text-sm max-h-[280px] overflow-y-auto elegant-scroll">
+            
+            {/* Nascimento Section */}
             {no.nascimento?.data && (
-              <div className="flex items-start gap-2">
-                <CalendarDays className="size-4 text-green-600 shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-medium text-green-800">Nascimento</p>
-                  <p className="text-green-700">{no.nascimento.data}{no.nascimento.local ? ` - ${no.nascimento.local}` : ''}</p>
+              <div className={`rounded-lg p-2.5 ${hasNascimento ? 'bg-green-50 border border-green-200' : 'bg-gray-50 border border-gray-200'}`}>
+                <div className="flex items-center gap-2 mb-2">
+                  {hasNascimento ? (
+                    <CheckCircle2 className="size-4 text-green-600 shrink-0" />
+                  ) : (
+                    <CalendarDays className="size-4 text-green-600 shrink-0" />
+                  )}
+                  <span className="font-semibold text-green-800 text-xs uppercase tracking-wide">Nascimento</span>
+                </div>
+                
+                <div className="space-y-1 ml-6 text-xs">
+                  <p><span className="text-muted-foreground">Data:</span> <span className="font-medium">{no.nascimento.data}</span></p>
+                  {no.nascimento.local && <p><span className="text-muted-foreground">Local:</span> <span className="font-medium">{no.nascimento.local}</span></p>}
+                  
+                  {/* Civil Registry Details */}
+                  {no.nascimento.registroCivil && (
+                    <div className="mt-2 pt-2 border-t border-green-200/50 space-y-1">
+                      {no.nascimento.registroCivil.cartorio && (
+                        <p><span className="text-muted-foreground">Cartório:</span> <span className="font-medium">{no.nascimento.registroCivil.cartorio}</span></p>
+                      )}
+                      {no.nascimento.registroCivil.livro && (
+                        <p><span className="text-muted-foreground">Livro:</span> <span className="font-medium">{no.nascimento.registroCivil.livro}</span></p>
+                      )}
+                      {no.nascimento.registroCivil.folha && (
+                        <p><span className="text-muted-foreground">Folha:</span> <span className="font-medium">{no.nascimento.registroCivil.folha}</span></p>
+                      )}
+                      {no.nascimento.registroCivil.termo && (
+                        <p><span className="text-muted-foreground">Termo:</span> <span className="font-medium">{no.nascimento.registroCivil.termo}</span></p>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
 
-            {/* Marriage info */}
+            {/* Casamento Section */}
             {no.casamento?.data && (
-              <div className="flex items-start gap-2">
-                <FileText className="size-4 text-pink-600 shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-medium text-pink-800">Casamento</p>
-                  <p className="text-pink-700">{no.casamento.data}</p>
+              <div className={`rounded-lg p-2.5 ${hasCasamento ? 'bg-pink-50 border border-pink-200' : 'bg-gray-50 border border-gray-200'}`}>
+                <div className="flex items-center gap-2 mb-2">
+                  {hasCasamento ? (
+                    <CheckCircle2 className="size-4 text-pink-600 shrink-0" />
+                  ) : (
+                    <FileText className="size-4 text-pink-600 shrink-0" />
+                  )}
+                  <span className="font-semibold text-pink-800 text-xs uppercase tracking-wide">Casamento</span>
+                </div>
+                
+                <div className="space-y-1 ml-6 text-xs">
+                  <p><span className="text-muted-foreground">Data:</span> <span className="font-medium">{no.casamento.data}</span></p>
+                  
+                  {/* Civil Registry Details */}
+                  {no.casamento.registroCivil && (
+                    <div className="mt-2 pt-2 border-t border-pink-200/50 space-y-1">
+                      {no.casamento.registroCivil.cartorio && (
+                        <p><span className="text-muted-foreground">Cartório:</span> <span className="font-medium">{no.casamento.registroCivil.cartorio}</span></p>
+                      )}
+                      {no.casamento.registroCivil.livro && (
+                        <p><span className="text-muted-foreground">Livro:</span> <span className="font-medium">{no.casamento.registroCivil.livro}</span></p>
+                      )}
+                      {no.casamento.registroCivil.folha && (
+                        <p><span className="text-muted-foreground">Folha:</span> <span className="font-medium">{no.casamento.registroCivil.folha}</span></p>
+                      )}
+                      {no.casamento.registroCivil.termo && (
+                        <p><span className="text-muted-foreground">Termo:</span> <span className="font-medium">{no.casamento.registroCivil.termo}</span></p>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
 
-            {/* Death info */}
+            {/* Óbito Section */}
             {no.obito?.data && (
-              <div className="flex items-start gap-2">
-                <AlertCircle className="size-4 text-gray-500 shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-medium text-gray-700">Óbito</p>
-                  <p className="text-gray-600">{no.obito.data}</p>
+              <div className={`rounded-lg p-2.5 ${hasObito ? 'bg-gray-100 border border-gray-300' : 'bg-gray-50 border border-gray-200'}`}>
+                <div className="flex items-center gap-2 mb-2">
+                  {hasObito ? (
+                    <CheckCircle2 className="size-4 text-gray-600 shrink-0" />
+                  ) : (
+                    <AlertCircle className="size-4 text-gray-500 shrink-0" />
+                  )}
+                  <span className="font-semibold text-gray-800 text-xs uppercase tracking-wide">Óbito</span>
+                </div>
+                
+                <div className="space-y-1 ml-6 text-xs">
+                  <p><span className="text-muted-foreground">Data:</span> <span className="font-medium">{no.obito.data}</span></p>
+                  
+                  {/* Civil Registry Details */}
+                  {no.obito.registroCivil && (
+                    <div className="mt-2 pt-2 border-t border-gray-300/50 space-y-1">
+                      {no.obito.registroCivil.cartorio && (
+                        <p><span className="text-muted-foreground">Cartório:</span> <span className="font-medium">{no.obito.registroCivil.cartorio}</span></p>
+                      )}
+                      {no.obito.registroCivil.livro && (
+                        <p><span className="text-muted-foreground">Livro:</span> <span className="font-medium">{no.obito.registroCivil.livro}</span></p>
+                      )}
+                      {no.obito.registroCivil.folha && (
+                        <p><span className="text-muted-foreground">Folha:</span> <span className="font-medium">{no.obito.registroCivil.folha}</span></p>
+                      )}
+                      {no.obito.registroCivil.termo && (
+                        <p><span className="text-muted-foreground">Termo:</span> <span className="font-medium">{no.obito.registroCivil.termo}</span></p>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
 
             {/* Name variations */}
             {no.variacoesGrafia && (
-              <div className="flex items-start gap-2">
+              <div className="flex items-start gap-2 p-2 bg-purple-50 rounded-lg border border-purple-200">
                 <MapPin className="size-4 text-purple-600 shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-medium text-purple-800">Variações de Grafia</p>
-                  <p className="text-purple-700 italic">{no.variacoesGrafia}</p>
+                  <p className="font-medium text-purple-800 text-xs">Variações de Grafia</p>
+                  <p className="text-purple-700 italic text-xs">{no.variacoesGrafia}</p>
                 </div>
               </div>
             )}
 
             {/* Annotations */}
-            {no.anotacoes && (
-              <div className="flex items-start gap-2">
+            {no.anotacoesCartorio && (
+              <div className="flex items-start gap-2 p-2 bg-orange-50 rounded-lg border border-orange-200">
                 <FileText className="size-4 text-orange-600 shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-medium text-orange-800">Anotações</p>
-                  <p className="text-orange-700 text-xs">{no.anotacoes}</p>
+                  <p className="font-medium text-orange-800 text-xs">Anotações do Cartório</p>
+                  <p className="text-orange-700 text-xs">{no.anotacoesCartorio}</p>
                 </div>
               </div>
             )}
@@ -1168,81 +1275,504 @@ export default function FichaCliente() {
         </TabsContent>
       </Tabs>
 
-      {/* Edit Node Modal */}
+      {/* Edit Node Modal - With Expandable Registry Sections */}
       <Dialog open={dialogNoAberto} onOpenChange={setDialogNoAberto}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-serif text-navy flex items-center gap-2">
               <User className="size-5" />
               Editar Membro da Família
             </DialogTitle>
             <DialogDescription>
-              Atualize os dados pessoais e registros deste membro.
+              Atualize os dados pessoais e registros civis deste membro.
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4 mt-4">
+            {/* Nome Completo */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-navy">Nome Completo *</label>
               <Input
                 value={formNo.nomeCompleto || ""}
                 onChange={(e) => setFormNo({...formNo, nomeCompleto: e.target.value})}
+                placeholder="Nome completo do membro"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-navy">Data Nascimento</label>
-                <Input
-                  placeholder="DD/MM/YYYY"
-                  value={formNo.nascimento?.data || ""}
-                  onChange={(e) => setFormNo({
-                    ...formNo, 
-                    nascimento: {...(formNo.nascimento || {}), data: formatarData(e.target.value)}
-                  })}
-                  maxLength={10}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-navy">Local Nasc.</label>
-                <Input
-                  placeholder="Cidade, País"
-                  value={formNo.nascimento?.local || ""}
-                  onChange={(e) => setFormNo({
-                    ...formNo, 
-                    nascimento: {...(formNo.nascimento || {}), local: e.target.value}
-                  })}
-                />
-              </div>
+            {/* Nascimento Section - Expandable */}
+            <div className={`border rounded-lg overflow-hidden transition-all ${formNo.nascimento?.data ? 'border-green-300 bg-green-50/30' : 'border-gray-200'}`}>
+              {/* Section Header / Toggle */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (!formNo.nascimento?.data) {
+                    setFormNo({
+                      ...formNo,
+                      nascimento: { data: '', local: '', tipo: 'nascimento', completo: false }
+                    });
+                  } else {
+                    const { nascimento, ...rest } = formNo;
+                    setFormNo(rest);
+                  }
+                }}
+                className="w-full flex items-center justify-between p-3 hover:bg-green-50/50 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <CalendarDays className={`size-5 ${formNo.nascimento?.data ? 'text-green-600' : 'text-gray-400'}`} />
+                  <span className={`font-medium ${formNo.nascimento?.data ? 'text-green-800' : 'text-gray-600'}`}>
+                    Nascimento
+                  </span>
+                  {formNo.nascimento?.data && formNo.nascimento.completo && (
+                    <CheckCircle2 className="size-4 text-green-600" />
+                  )}
+                </div>
+                <span className={`text-xs px-2 py-1 rounded-full ${
+                  formNo.nascimento?.data 
+                    ? 'bg-green-100 text-green-700' 
+                    : 'bg-gray-100 text-gray-500'
+                }`}>
+                  {formNo.nascimento?.data ? 'Ativo' : '+ Adicionar'}
+                </span>
+              </button>
+
+              {/* Expanded Content */}
+              {formNo.nascimento && (
+                <div className="p-3 pt-0 space-y-3 border-t border-green-200/50 mt-1">
+                  <div className="grid grid-cols-2 gap-3 pt-3">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-green-800">Data</label>
+                      <Input
+                        placeholder="DD/MM/YYYY"
+                        value={formNo.nascimento.data || ""}
+                        onChange={(e) => {
+                          const newData = formatarData(e.target.value);
+                          const hasAllFields = newData && formNo.nascimento.local;
+                          setFormNo({
+                            ...formNo,
+                            nascimento: {...formNo.nascimento!, data: newData, completo: !!hasAllFields}
+                          });
+                        }}
+                        maxLength={10}
+                        className="border-green-200 focus:border-green-400"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-green-800">Local</label>
+                      <Input
+                        placeholder="Cidade, País"
+                        value={formNo.nascimento.local || ""}
+                        onChange={(e) => {
+                          const hasAllFields = formNo.nascimento.data && e.target.value;
+                          setFormNo({
+                            ...formNo,
+                            nascimento: {...formNo.nascimento!, local: e.target.value, completo: !!hasAllFields}
+                          });
+                        }}
+                        className="border-green-200 focus:border-green-400"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Civil Registry Fields */}
+                  {(formNo.nascimento.data) && (
+                    <div className="pt-2 space-y-2 bg-white rounded-md p-3 border border-green-200/50">
+                      <p className="text-[10px] font-semibold uppercase tracking-wide text-green-700 flex items-center gap-1">
+                        <FileText className="size-3" /> Dados do Registro Civil
+                      </p>
+                      
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <label className="text-[10px] text-muted-foreground">Cartório</label>
+                          <Input
+                            placeholder="Nome do cartório"
+                            value={formNo.nascimento.registroCivil?.cartorio || ''}
+                            onChange={(e) => setFormNo({
+                              ...formNo,
+                              nascimento: {
+                                ...formNo.nascimento!,
+                                registroCivil: {...(formNo.nascimento.registroCivil || {}), cartorio: e.target.value}
+                              }
+                            })}
+                            className="h-8 text-xs"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] text-muted-foreground">Livro</label>
+                          <Input
+                            placeholder="Nº do livro"
+                            value={formNo.nascimento.registroCivil?.livro || ''}
+                            onChange={(e) => setFormNo({
+                              ...formNo,
+                              nascimento: {
+                                ...formNo.nascimento!,
+                                registroCivil: {...(formNo.nascimento.registroCivil || {}), livro: e.target.value}
+                              }
+                            })}
+                            className="h-8 text-xs"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] text-muted-foreground">Folha</label>
+                          <Input
+                            placeholder="Nº da folha"
+                            value={formNo.nascimento.registroCivil?.folha || ''}
+                            onChange={(e) => setFormNo({
+                              ...formNo,
+                              nascimento: {
+                                ...formNo.nascimento!,
+                                registroCivil: {...(formNo.nascimento.registroCivil || {}), folha: e.target.value}
+                              }
+                            })}
+                            className="h-8 text-xs"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] text-muted-foreground">Termo</label>
+                          <Input
+                            placeholder="Nº do termo"
+                            value={formNo.nascimento.registroCivil?.termo || ''}
+                            onChange={(e) => setFormNo({
+                              ...formNo,
+                              nascimento: {
+                                ...formNo.nascimento!,
+                                registroCivil: {...(formNo.nascimento.registroCivil || {}), termo: e.target.value}
+                              }
+                            })}
+                            className="h-8 text-xs"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-navy">Data Casamento</label>
-                <Input
-                  placeholder="DD/MM/YYYY"
-                  value={formNo.casamento?.data || ""}
-                  onChange={(e) => setFormNo({
-                    ...formNo, 
-                    casamento: {...(formNo.casamento || {}), data: formatarData(e.target.value)}
-                  })}
-                  maxLength={10}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-navy">Data Óbito</label>
-                <Input
-                  placeholder="DD/MM/YYYY"
-                  value={formNo.obito?.data || ""}
-                  onChange={(e) => setFormNo({
-                    ...formNo, 
-                    obito: {...(formNo.obito || {}), data: formatarData(e.target.value)}
-                  })}
-                  maxLength={10}
-                />
-              </div>
+            {/* Casamento Section - Expandable */}
+            <div className={`border rounded-lg overflow-hidden transition-all ${formNo.casamento?.data ? 'border-pink-300 bg-pink-50/30' : 'border-gray-200'}`}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!formNo.casamento?.data) {
+                    setFormNo({
+                      ...formNo,
+                      casamento: { data: '', local: '', tipo: 'casamento', completo: false }
+                    });
+                  } else {
+                    const { casamento, ...rest } = formNo;
+                    setFormNo(rest);
+                  }
+                }}
+                className="w-full flex items-center justify-between p-3 hover:bg-pink-50/50 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <FileText className={`size-5 ${formNo.casamento?.data ? 'text-pink-600' : 'text-gray-400'}`} />
+                  <span className={`font-medium ${formNo.casamento?.data ? 'text-pink-800' : 'text-gray-600'}`}>
+                    Casamento
+                  </span>
+                  {formNo.casamento?.data && formNo.casamento.completo && (
+                    <CheckCircle2 className="size-4 text-pink-600" />
+                  )}
+                </div>
+                <span className={`text-xs px-2 py-1 rounded-full ${
+                  formNo.casamento?.data 
+                    ? 'bg-pink-100 text-pink-700' 
+                    : 'bg-gray-100 text-gray-500'
+                }`}>
+                  {formNo.casamento?.data ? 'Ativo' : '+ Adicionar'}
+                </span>
+              </button>
+
+              {formNo.casamento && (
+                <div className="p-3 pt-0 space-y-3 border-t border-pink-200/50 mt-1">
+                  <div className="grid grid-cols-2 gap-3 pt-3">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-pink-800">Data</label>
+                      <Input
+                        placeholder="DD/MM/YYYY"
+                        value={formNo.casamento.data || ""}
+                        onChange={(e) => {
+                          const newData = formatarData(e.target.value);
+                          const rc = formNo.casamento.registroCivil;
+                          const hasRegistry = rc?.cartorio || rc?.livro || rc?.folha || rc?.termo;
+                          setFormNo({
+                            ...formNo,
+                            casamento: {...formNo.casamento!, data: newData, completo: !!(newData && hasRegistry)}
+                          });
+                        }}
+                        maxLength={10}
+                        className="border-pink-200 focus:border-pink-400"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-pink-800">Local</label>
+                      <Input
+                        placeholder="Cidade, País"
+                        value={formNo.casamento.local || ""}
+                        onChange={(e) => setFormNo({...formNo, casamento: {...formNo.casamento!, local: e.target.value}})}
+                        className="border-pink-200 focus:border-pink-400"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Civil Registry Fields for Marriage */}
+                  {formNo.casamento.data && (
+                    <div className="pt-2 space-y-2 bg-white rounded-md p-3 border border-pink-200/50">
+                      <p className="text-[10px] font-semibold uppercase tracking-wide text-pink-700 flex items-center gap-1">
+                        <FileText className="size-3" /> Dados do Registro Civil
+                      </p>
+                      
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <label className="text-[10px] text-muted-foreground">Cartório</label>
+                          <Input
+                            placeholder="Nome do cartório"
+                            value={formNo.casamento.registroCivil?.cartorio || ''}
+                            onChange={(e) => {
+                              const newRc = {...(formNo.casamento.registroCivil || {}), cartorio: e.target.value};
+                              const hasAnyField = Object.values(newRc).some(v => v);
+                              setFormNo({
+                                ...formNo,
+                                casamento: {
+                                  ...formNo.casamento!,
+                                  registroCivil: newRc,
+                                  completo: !!(formNo.casamento.data && hasAnyField)
+                                }
+                              });
+                            }}
+                            className="h-8 text-xs"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] text-muted-foreground">Livro</label>
+                          <Input
+                            placeholder="Nº do livro"
+                            value={formNo.casamento.registroCivil?.livro || ''}
+                            onChange={(e) => {
+                              const newRc = {...(formNo.casamento.registroCivil || {}), livro: e.target.value};
+                              const hasAnyField = Object.values(newRc).some(v => v);
+                              setFormNo({
+                                ...formNo,
+                                casamento: {
+                                  ...formNo.casamento!,
+                                  registroCivil: newRc,
+                                  completo: !!(formNo.casamento.data && hasAnyField)
+                                }
+                              });
+                            }}
+                            className="h-8 text-xs"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] text-muted-foreground">Folha</label>
+                          <Input
+                            placeholder="Nº da folha"
+                            value={formNo.casamento.registroCivil?.folha || ''}
+                            onChange={(e) => {
+                              const newRc = {...(formNo.casamento.registroCivil || {}), folha: e.target.value};
+                              const hasAnyField = Object.values(newRc).some(v => v);
+                              setFormNo({
+                                ...formNo,
+                                casamento: {
+                                  ...formNo.casamento!,
+                                  registroCivil: newRc,
+                                  completo: !!(formNo.casamento.data && hasAnyField)
+                                }
+                              });
+                            }}
+                            className="h-8 text-xs"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] text-muted-foreground">Termo</label>
+                          <Input
+                            placeholder="Nº do termo"
+                            value={formNo.casamento.registroCivil?.termo || ''}
+                            onChange={(e) => {
+                              const newRc = {...(formNo.casamento.registroCivil || {}), termo: e.target.value};
+                              const hasAnyField = Object.values(newRc).some(v => v);
+                              setFormNo({
+                                ...formNo,
+                                casamento: {
+                                  ...formNo.casamento!,
+                                  registroCivil: newRc,
+                                  completo: !!(formNo.casamento.data && hasAnyField)
+                                }
+                              });
+                            }}
+                            className="h-8 text-xs"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
+            {/* Óbito Section - Expandable */}
+            <div className={`border rounded-lg overflow-hidden transition-all ${formNo.obito?.data ? 'border-gray-400 bg-gray-50/50' : 'border-gray-200'}`}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!formNo.obito?.data) {
+                    setFormNo({
+                      ...formNo,
+                      obito: { data: '', local: '', tipo: 'obito', completo: false }
+                    });
+                  } else {
+                    const { obito, ...rest } = formNo;
+                    setFormNo(rest);
+                  }
+                }}
+                className="w-full flex items-center justify-between p-3 hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <AlertCircle className={`size-5 ${formNo.obito?.data ? 'text-gray-600' : 'text-gray-400'}`} />
+                  <span className={`font-medium ${formNo.obito?.data ? 'text-gray-800' : 'text-gray-600'}`}>
+                    Óbito
+                  </span>
+                  {formNo.obito?.data && formNo.obito.completo && (
+                    <CheckCircle2 className="size-4 text-gray-600" />
+                  )}
+                </div>
+                <span className={`text-xs px-2 py-1 rounded-full ${
+                  formNo.obito?.data 
+                    ? 'bg-gray-200 text-gray-700' 
+                    : 'bg-gray-100 text-gray-500'
+                }`}>
+                  {formNo.obito?.data ? 'Ativo' : '+ Adicionar'}
+                </span>
+              </button>
+
+              {formNo.obito && (
+                <div className="p-3 pt-0 space-y-3 border-t border-gray-300/50 mt-1">
+                  <div className="grid grid-cols-2 gap-3 pt-3">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-gray-800">Data</label>
+                      <Input
+                        placeholder="DD/MM/YYYY"
+                        value={formNo.obito.data || ""}
+                        onChange={(e) => {
+                          const newData = formatarData(e.target.value);
+                          const rc = formNo.obito.registroCivil;
+                          const hasRegistry = rc?.cartorio || rc?.livro || rc?.folha || rc?.termo;
+                          setFormNo({
+                            ...formNo,
+                            obito: {...formNo.obito!, data: newData, completo: !!(newData && hasRegistry)}
+                          });
+                        }}
+                        maxLength={10}
+                        className="border-gray-300 focus:border-gray-500"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-gray-800">Local</label>
+                      <Input
+                        placeholder="Cidade, País"
+                        value={formNo.obito.local || ""}
+                        onChange={(e) => setFormNo({...formNo, obito: {...formNo.obito!, local: e.target.value}})}
+                        className="border-gray-300 focus:border-gray-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Civil Registry Fields for Death */}
+                  {formNo.obito.data && (
+                    <div className="pt-2 space-y-2 bg-white rounded-md p-3 border border-gray-300/50">
+                      <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-700 flex items-center gap-1">
+                        <FileText className="size-3" /> Dados do Registro Civil
+                      </p>
+                      
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <label className="text-[10px] text-muted-foreground">Cartório</label>
+                          <Input
+                            placeholder="Nome do cartório"
+                            value={formNo.obito.registroCivil?.cartorio || ''}
+                            onChange={(e) => {
+                              const newRc = {...(formNo.obito.registroCivil || {}), cartorio: e.target.value};
+                              const hasAnyField = Object.values(newRc).some(v => v);
+                              setFormNo({
+                                ...formNo,
+                                obito: {
+                                  ...formNo.obito!,
+                                  registroCivil: newRc,
+                                  completo: !!(formNo.obito.data && hasAnyField)
+                                }
+                              });
+                            }}
+                            className="h-8 text-xs"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] text-muted-foreground">Livro</label>
+                          <Input
+                            placeholder="Nº do livro"
+                            value={formNo.obito.registroCivil?.livro || ''}
+                            onChange={(e) => {
+                              const newRc = {...(formNo.obito.registroCivil || {}), livro: e.target.value};
+                              const hasAnyField = Object.values(newRc).some(v => v);
+                              setFormNo({
+                                ...formNo,
+                                obito: {
+                                  ...formNo.obito!,
+                                  registroCivil: newRc,
+                                  completo: !!(formNo.obito.data && hasAnyField)
+                                }
+                              });
+                            }}
+                            className="h-8 text-xs"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] text-muted-foreground">Folha</label>
+                          <Input
+                            placeholder="Nº da folha"
+                            value={formNo.obito.registroCivil?.folha || ''}
+                            onChange={(e) => {
+                              const newRc = {...(formNo.obito.registroCivil || {}), folha: e.target.value};
+                              const hasAnyField = Object.values(newRc).some(v => v);
+                              setFormNo({
+                                ...formNo,
+                                obito: {
+                                  ...formNo.obito!,
+                                  registroCivil: newRc,
+                                  completo: !!(formNo.obito.data && hasAnyField)
+                                }
+                              });
+                            }}
+                            className="h-8 text-xs"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] text-muted-foreground">Termo</label>
+                          <Input
+                            placeholder="Nº do termo"
+                            value={formNo.obito.registroCivil?.termo || ''}
+                            onChange={(e) => {
+                              const newRc = {...(formNo.obito.registroCivil || {}), termo: e.target.value};
+                              const hasAnyField = Object.values(newRc).some(v => v);
+                              setFormNo({
+                                ...formNo,
+                                obito: {
+                                  ...formNo.obito!,
+                                  registroCivil: newRc,
+                                  completo: !!(formNo.obito.data && hasAnyField)
+                                }
+                              });
+                            }}
+                            className="h-8 text-xs"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Status do Registro */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-navy">Status do Registro</label>
               <Select 
@@ -1261,6 +1791,7 @@ export default function FichaCliente() {
               </Select>
             </div>
 
+            {/* Variações de Grafia */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-navy">Variações de Grafia do Nome</label>
               <Input
@@ -1270,6 +1801,7 @@ export default function FichaCliente() {
               />
             </div>
 
+            {/* Anotações de Cartório */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-navy">Anotações de Cartório</label>
               <textarea
@@ -1281,7 +1813,8 @@ export default function FichaCliente() {
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-2">
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-2 pt-4 border-t">
               <Button variant="outline" onClick={() => setDialogNoAberto(false)}>
                 Cancelar
               </Button>

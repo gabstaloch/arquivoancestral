@@ -15,10 +15,19 @@ export type StatusRegistro =
 
 export type StatusPagamento = "pago" | "pendente" | "aguardando";
 
+export interface DadosRegistroCivil {
+  cartorio: string;    // Cartório de Registro Civil
+  livro: string;       // Livro
+  folha: string;       // Folha  
+  termo: string;       // Termo
+}
+
 export interface DataRegistro {
   data: string;
   local: string;
   tipo: "nascimento" | "casamento" | "obito";
+  registroCivil?: DadosRegistroCivil;  // Dados do cartório (opcional)
+  completo: boolean;  // Indica se está completamente preenchido
 }
 
 export interface NoArvore {
