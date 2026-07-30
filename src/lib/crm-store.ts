@@ -73,7 +73,7 @@ function saveState(state: CrmState): void {
 // Auth functions
 export function login(senha: string): boolean {
   // Simple password check
-  if (senha === "admin123") {
+  if (senha === "6445594") {
     if (typeof window !== "undefined") {
       localStorage.setItem(AUTH_KEY, "true");
     }

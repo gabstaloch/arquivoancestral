@@ -39,7 +39,7 @@ export default function PainelLayout({ children }: PainelLayoutProps) {
 
   function handleLogout() {
     logout();
-    router.push("/painel/login");
+    router.push("/login");
   }
 
   if (verificando) {
