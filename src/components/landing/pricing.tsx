@@ -131,7 +131,7 @@ export function Pricing() {
               <span className="font-600 text-navy">APENAS</span> se a certidão
               oficial do seu ancestral for localizada no arquivo ou órgão europeu
               competente. Se não encontrarmos, esta taxa{" "}
-              <span className="font-600 text-green-700">não é cobrada</span>.
+              <span className="font-600 text-navy">não é cobrada</span>.
             </p>
 
             <ul className="mt-6 space-y-3">
