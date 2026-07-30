@@ -2,6 +2,7 @@
 
 import { Mail, MessageCircle, ShieldCheck } from "lucide-react";
 import { SITE, whatsappLink } from "@/lib/site";
+import Image from "next/image";
 
 const FOOTER_LINKS = [
   {
@@ -55,9 +56,17 @@ export function SiteFooter() {
       {/* Main footer */}
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-12">
-          {/* Brand */}
+          {/* Brand com Logo */}
           <div className="lg:col-span-4">
             <div className="flex items-center gap-3">
+              <div className="relative size-12 shrink-0 sm:size-14">
+                <Image
+                  src="/logo-arquivo-ancestral.png"
+                  alt={`${SITE.brand} - Logo`}
+                  fill
+                  className="object-contain"
+                />
+              </div>
               <span className="flex flex-col leading-none">
                 <span className="font-serif text-base font-700 text-white">
                   {SITE.brand}

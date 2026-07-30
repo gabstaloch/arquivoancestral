@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { whatsappLink, SITE } from "@/lib/site";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 const NAV_LINKS = [
   { label: "Como Funciona", href: "#como-funciona" },
@@ -35,8 +36,17 @@ export function SiteHeader() {
       )}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:h-20 sm:px-6 lg:px-8">
-        {/* Brand */}
+        {/* Brand com Logo */}
         <a href="#topo" className="flex items-center gap-3 group">
+          <div className="relative size-12 shrink-0 sm:size-14">
+            <Image
+              src="/logo-arquivo-ancestral.png"
+              alt={`${SITE.brand} - Logo`}
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
           <span className="flex flex-col leading-none">
             <span className="font-serif text-base font-700 text-white sm:text-lg">
               {SITE.brand}
