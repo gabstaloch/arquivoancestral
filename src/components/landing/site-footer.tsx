@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, MessageCircle, ShieldCheck } from "lucide-react";
+import { Mail, MessageCircle, ShieldCheck, FileText } from "lucide-react";
 import { SITE, whatsappLink } from "@/lib/site";
 import Image from "next/image";
 import { LGPDModal } from "@/components/landing/lgpd-modal";
+import { TermosUsoModal } from "@/components/landing/termos-uso-modal";
 
 const FOOTER_LINKS = [
   {
@@ -25,13 +26,14 @@ const FOOTER_LINKS = [
     links: [
       { label: "Perguntas Frequentes", href: "#duvidas" },
       { label: "Falar via WhatsApp", href: whatsappLink() },
-      { label: "Termos de Uso", href: "#" },
+      { label: "Termos de Uso", href: "#", isButton: true },
     ],
   },
 ];
 
 export function SiteFooter() {
   const [lgpdOpen, setLgpdOpen] = useState(false);
+  const [termosOpen, setTermosOpen] = useState(false);
 
   return (
     <footer className="bg-navy-dark text-white/70">
@@ -115,18 +117,28 @@ export function SiteFooter() {
                 <ul className="mt-4 space-y-2.5">
                   {col.links.map((link) => (
                     <li key={link.label}>
-                      <a
-                        href={link.href}
-                        target={link.href.startsWith("http") ? "_blank" : undefined}
-                        rel={
-                          link.href.startsWith("http")
-                            ? "noopener noreferrer"
-                            : undefined
-                        }
-                        className="text-sm text-white/60 transition-colors hover:text-white"
-                      >
-                        {link.label}
-                      </a>
+                      {(link as any).isButton ? (
+                        <button
+                          onClick={() => setTermosOpen(true)}
+                          className="flex items-center gap-1.5 text-sm text-gold/80 transition-colors hover:text-gold font-medium"
+                        >
+                          <FileText className="size-3.5" />
+                          {link.label}
+                        </button>
+                      ) : (
+                        <a
+                          href={link.href}
+                          target={link.href.startsWith("http") ? "_blank" : undefined}
+                          rel={
+                            link.href.startsWith("http")
+                              ? "noopener noreferrer"
+                              : undefined
+                          }
+                          className="text-sm text-white/60 transition-colors hover:text-white"
+                        >
+                          {link.label}
+                        </a>
+                      )}
                     </li>
                   ))}
                   
@@ -162,9 +174,13 @@ export function SiteFooter() {
               <ShieldCheck className="size-3.5" />
               Política de Privacidade & LGPD
             </button>
-            <a href="#" className="transition-colors hover:text-white">
+            <button 
+              onClick={() => setTermosOpen(true)}
+              className="transition-colors hover:text-gold flex items-center gap-1.5 font-medium"
+            >
+              <FileText className="size-3.5" />
               Termos de Uso
-            </a>
+            </button>
             <a href="/login" className="transition-colors hover:text-gold text-white/30">
               Painel Interno
             </a>
@@ -200,6 +216,9 @@ export function SiteFooter() {
 
       {/* Modal LGPD */}
       <LGPDModal isOpen={lgpdOpen} onClose={() => setLgpdOpen(false)} />
+      
+      {/* Modal Termos de Uso */}
+      <TermosUsoModal isOpen={termosOpen} onClose={() => setTermosOpen(false)} />
     </footer>
   );
 }
