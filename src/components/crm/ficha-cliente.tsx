@@ -67,7 +67,7 @@ import {
   getStatusRegistroColor,
   generateId,
 } from "@/lib/crm-store";
-import ImagePasteZone from "@/components/crm/image-paste-zone";
+import MatriculaPasteZone from "@/components/crm/image-paste-zone";
 import { DadosExtraidosOCR } from "@/lib/ocr-utils";
 
 // Formata data brasileira: 10042004 → 10/04/2004
@@ -1388,9 +1388,8 @@ export default function FichaCliente() {
                         </p>
                       </div>
                       
-                      {/* Image Paste Zone - OCR */}
-                      <ImagePasteZone 
-                        label="Cole aqui a imagem do registro (Ctrl+V)"
+                      {/* Zona de Colar Matrícula */}
+                      <MatriculaPasteZone 
                         tipoRegistro="nascimento"
                         isActive={zonaColarAtiva === 'nascimento'}
                         onActivate={() => setZonaColarAtiva('nascimento')}
@@ -1565,9 +1564,8 @@ export default function FichaCliente() {
                         </p>
                       </div>
                       
-                      {/* Image Paste Zone - OCR */}
-                      <ImagePasteZone 
-                        label="Cole aqui a imagem do registro (Ctrl+V)"
+                      {/* Zona de Colar Matrícula */}
+                      <MatriculaPasteZone 
                         tipoRegistro="casamento"
                         isActive={zonaColarAtiva === 'casamento'}
                         onActivate={() => setZonaColarAtiva('casamento')}
@@ -1760,9 +1758,8 @@ export default function FichaCliente() {
                         </p>
                       </div>
                       
-                      {/* Image Paste Zone - OCR */}
-                      <ImagePasteZone 
-                        label="Cole aqui a imagem do registro (Ctrl+V)"
+                      {/* Zona de Colar Matrícula */}
+                      <MatriculaPasteZone 
                         tipoRegistro="obito"
                         isActive={zonaColarAtiva === 'obito'}
                         onActivate={() => setZonaColarAtiva('obito')}
