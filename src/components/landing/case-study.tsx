@@ -54,7 +54,7 @@ export function CaseStudy() {
 
               <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
                 O cliente já havia tentado por conta própria junto a órgãos
-                alemães e poloneses, sem sucesso — a região da Silésia mudou de
+                alemães e poloneses, sem sucesso. A região da Silésia mudou de
                 jurisdição diversas vezes ao longo do século XX, e os registros
                 estavam espalhados entre arquivos de Berlim, Breslávia (Wrocław)
                 e paróquias locais.
@@ -82,8 +82,8 @@ export function CaseStudy() {
                 <p className="text-xs leading-snug text-muted-foreground">
                   <span className="font-600 text-navy">Depoimento:</span> "Depois
                   de anos batendo em portas erradas, eles encontraram em poucos
-                  meses. Profissionalismo do início ao fim." —{" "}
-                  <span className="font-500 text-navy">R. Köhler, SC</span>
+                  meses. Profissionalismo do início ao fim."
+                  <span className="font-500 text-navy"> R. Köhler, SC</span>
                 </p>
               </div>
             </div>

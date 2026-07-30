@@ -42,7 +42,7 @@ export function Hero() {
             </h1>
 
             <p className="mt-5 max-w-xl text-base leading-relaxed text-white/80 sm:text-lg">
-              Primeiro reconstruímos a linha de descendência da sua família no Brasil —
+              Primeiro reconstruímos a linha de descendência da sua família no Brasil,
               identificando cartórios, paróquias e registros de imigração. Com esse
               mapeamento completo, buscamos a certidão original do seu ancestral na{" "}
               <span className="font-medium text-white">Alemanha, Itália ou Leste

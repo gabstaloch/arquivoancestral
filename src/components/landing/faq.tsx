@@ -13,7 +13,7 @@ import { whatsappLink } from "@/lib/site";
 const FAQ = [
   {
     q: "O que acontece se o documento do europeu não for encontrado?",
-    a: "Explicamos com total transparência como funciona nosso modelo em duas etapas. O valor inicial de R$ 250 remunera toda a pesquisa minuciosa realizada no Brasil — incluindo levantamento de cartórios, consulta a paróquias, cruzamento de dados de imigração e a montagem completa do mapa da sua linhagem familiar. Esse relatório de mapeamento é entregue a você independentemente do resultado. Se a certidão na Europa não for localizada, você NÃO paga a Taxa de Sucesso (R$ 1.200+). No entanto, o valor da primeira etapa (R$ 250) não é devolvido, pois corresponde a um serviço de investigação que foi efetivamente concluído e entregue.",
+    a: "Explicamos com total transparência como funciona nosso modelo em duas etapas. O valor inicial de R$ 250 remunera toda a pesquisa minuciosa realizada no Brasil, incluindo levantamento de cartórios, consulta a paróquias, cruzamento de dados de imigração e a montagem completa do mapa da sua linhagem familiar. Esse relatório de mapeamento é entregue a você independentemente do resultado. Se a certidão na Europa não for localizada, você NÃO paga a Taxa de Sucesso (R$ 1.200+). No entanto, o valor da primeira etapa (R$ 250) não é devolvido, pois corresponde a um serviço de investigação que foi efetivamente concluído e entregue.",
   },
   {
     q: "E se meu ancestral tiver mudado de nome no Brasil?",

@@ -545,7 +545,7 @@ function Step3({ data, errors, update }: StepProps) {
       </h3>
       <p className="mt-1 text-sm text-muted-foreground">
         O que você sabe (ou presume) sobre quem emigrou para o Brasil. Não se
-        preocupe se faltarem dados — marque &ldquo;Sem conhecimento&rdquo;.
+        preocupe se faltarem dados, marque &ldquo;Sem conhecimento&rdquo;.
       </p>
       <div className="mt-6 grid gap-5 sm:grid-cols-2">
         <div className="sm:col-span-2">
