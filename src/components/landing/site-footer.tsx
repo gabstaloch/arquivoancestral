@@ -136,7 +136,7 @@ export function SiteFooter() {
         <div className="mt-10 flex flex-col gap-4 border-t border-white/10 pt-6 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">
           <p>
             © {new Date().getFullYear()} {SITE.brand}. Todos os direitos
-            reservados. CNPJ 00.000.000/0001-00.
+            reservados.
           </p>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
             <a href="#" className="transition-colors hover:text-white">
