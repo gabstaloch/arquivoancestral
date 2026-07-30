@@ -1,15 +1,15 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Clipboard, Image as ImageIcon, Loader2, CheckCircle2, X, MousePointerClick, RefreshCw, WifiOff } from 'lucide-react';
+import { Clipboard, Image as ImageIcon, Loader2, CheckCircle2, X, MousePointerClick, RefreshCw, AlertTriangle } from 'lucide-react';
 import { processarImagemRegistro, getImageFromClipboard, DadosExtraidosOCR } from '@/lib/ocr-utils';
 
 interface ImagePasteZoneProps {
   onDadosExtraidos: (dados: DadosExtraidosOCR) => void;
   label?: string;
-  isActive?: boolean;  // Controlado pelo pai - qual zona está ativa
-  onActivate?: () => void;  // Callback quando esta zona é ativada
-  tipoRegistro?: string;  // Para identificação visual (nascimento, casamento, obito)
+  isActive?: boolean;
+  onActivate?: () => void;
+  tipoRegistro?: string;
 }
 
 export default function ImagePasteZone({ 
@@ -22,14 +22,13 @@ export default function ImagePasteZone({
   const [processando, setProcessando] = useState(false);
   const [imagemPreview, setImagemPreview] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+  const [aviso, setAviso] = useState<string | null>(null);
   const [sucesso, setSucesso] = useState(false);
-  const [erroRede, setErroRede] = useState(false);  // Erro específico de rede
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Listener para Ctrl+V - SÓ funciona se esta zona está ATIVA
   useEffect(() => {
     const handlePaste = async (e: ClipboardEvent) => {
-      // SÓ processar se esta zona está ativa E há imagem no clipboard
       if (!isActive) return;
       
       const items = e.clipboardData?.items;
@@ -55,20 +54,19 @@ export default function ImagePasteZone({
     return () => {
       document.removeEventListener('paste', handlePaste);
     };
-  }, [isActive]);  // Re-cria listener quando isActive muda
+  }, [isActive]);
 
   // Processar imagem colada
   const processarImagemColada = useCallback(async (clipboardData?: DataTransfer | null) => {
     setProcessando(true);
     setErro(null);
-    setErroRede(false);
+    setAviso(null);
     setSucesso(false);
 
     try {
       let arquivoImagem: File | null = null;
 
       if (clipboardData) {
-        // Encontrar imagem nos itens do clipboard
         const items = clipboardData.items;
         for (const item of Array.from(items)) {
           if (item.type.startsWith('image/')) {
@@ -77,12 +75,12 @@ export default function ImagePasteZone({
           }
         }
       } else {
-        // Tentar pegar da API de clipboard
         arquivoImagem = await getImageFromClipboard();
       }
 
       if (!arquivoImagem) {
-        throw new Error('Nenhuma imagem encontrada na área de transferência. Copie uma imagem primeiro (Ctrl+C).');
+        setErro('Nenhuma imagem encontrada. Copie uma imagem primeiro (Ctrl+C).');
+        return;
       }
 
       // Criar preview da imagem
@@ -93,45 +91,44 @@ export default function ImagePasteZone({
       reader.readAsDataURL(arquivoImagem);
 
       // Processar com OCR
+      console.log(`🔄 Iniciando OCR para ${tipoRegistro || 'registro'}...`);
       const dadosExtraidos = await processarImagemRegistro(arquivoImagem);
 
-      console.log(`Dados extraídos (${tipoRegistro || 'registro'}):`, dadosExtraidos);
+      console.log(`✅ Resultado OCR (${tipoRegistro}):`, dadosExtraidos);
 
-      // Verificar se houve erro no OCR mas com dados parciais
+      // Verificar resultado
       if (dadosExtraidos.erro && !dadosExtraidos.livro && !dadosExtraidos.folha && !dadosExtraidos.termo) {
-        throw new Error(dadosExtraidos.erro);
+        // Erro crítico - não extraiu nada útil
+        setErro(dadosExtraidos.erro);
+        if (dadosExtraidos.aviso) {
+          setAviso(dadosExtraidos.aviso);
+        }
+        return;  // Não chamar callback, mostrar erro
       }
 
-      // Chamar callback com os dados
+      // Sucesso parcial ou total - sempre enviar dados
+      if (dadosExtraidos.erro) {
+        setAviso(dadosExtraidos.erro);  // Mostrar como aviso, não erro
+      }
+      if (dadosExtraidos.aviso) {
+        setAviso(prev => prev ? prev + '\n' + dadosExtraidos.aviso : dadosExtraidos.aviso);
+      }
+
+      // Chamar callback com os dados extraídos (mesmo que parciais)
       onDadosExtraidos(dadosExtraidos);
 
-      setSucesso(true);
-      
-      // Limpar mensagem de sucesso após 5 segundos
-      setTimeout(() => setSucesso(false), 5000);
+      // Marcar como sucesso se tiver pelo menos alguns dados
+      const temDadosUteis = dadosExtraidos.livro || dadosExtraidos.folha || 
+                           dadosExtraidos.termo || dadosExtraidos.cartorio;
+      if (temDadosUteis) {
+        setSucesso(true);
+        setTimeout(() => setSucesso(false), 5000);
+      }
 
     } catch (error: unknown) {
-      console.error('Erro ao processar imagem:', error);
-      
-      const errorMessage = error instanceof Error ? error.message : 'Falha ao processar imagem. Tente novamente.';
-      
-      // Detectar erros de rede/conexão
-      if (
-        errorMessage.includes('conexão') || 
-        errorMessage.includes('connection') ||
-        errorMessage.includes('network') ||
-        errorMessage.includes('NetworkError') ||
-        errorMessage.includes('Failed to execute') ||
-        errorMessage.includes('importScripts') ||
-        errorMessage.includes('worker') ||
-        errorMessage.includes('Timeout') ||
-        errorMessage.includes('baixar')
-      ) {
-        setErroRede(true);
-      }
-      
-      setErro(errorMessage);
-      // Manter erro visível por mais tempo para erros de rede
+      console.error('❌ Erro inesperado:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      setErro(`Erro inesperado: ${errorMessage}`);
     } finally {
       setProcessando(false);
     }
@@ -139,12 +136,10 @@ export default function ImagePasteZone({
 
   // Clique para ativar esta zona e/ou colar
   const handleClick = async () => {
-    // Ativar esta zona
     if (onActivate) {
       onActivate();
     }
     
-    // Se já está ativa, tentar pegar imagem do clipboard
     if (isActive) {
       await processarImagemColada();
     }
@@ -161,7 +156,7 @@ export default function ImagePasteZone({
     setImagemPreview(null);
     setSucesso(false);
     setErro(null);
-    setErroRede(false);
+    setAviso(null);
   };
 
   // Cores baseadas no tipo de registro
@@ -271,11 +266,11 @@ export default function ImagePasteZone({
               erro ? 'text-red-600' : 
               isActive ? colors.textColor : 'text-navy/70'
             }`}>
-              {sucesso ? 'Dados Extraídos com Sucesso!' : 
-               erro || (isActive ? 'Pronto para colar (Ctrl+V)' : label)}
+              {sucesso ? 'Dados Extraídos!' : 
+               erro || (isActive ? 'Pronto! Ctrl+V para colar' : label)}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              {isActive ? 'Cole a imagem agora...' : 'Clique para ativar, depois Ctrl+V'}
+              {isActive ? 'Cole a imagem do registro agora...' : 'Clique aqui para ativar'}
             </p>
           </div>
           
@@ -284,11 +279,10 @@ export default function ImagePasteZone({
             <span>Extrai: Cartório, Livro, Folha, Termo</span>
           </div>
 
-          {/* Indicador visual de tipo */}
           {tipoRegistro && isActive && (
             <div className={`text-[9px] px-2 py-0.5 rounded ${colors.badgeBg} ${colors.badgeText} uppercase tracking-wider`}>
-              Registro: {tipoRegistro === 'nascimento' ? 'Nascimento' : 
-                       tipoRegistro === 'casamento' ? 'Casamento' : 'Óbito'}
+              {tipoRegistro === 'nascimento' ? 'Nascimento' : 
+               tipoRegistro === 'casamento' ? 'Casamento' : 'Óbito'}
             </div>
           )}
         </div>
@@ -298,25 +292,24 @@ export default function ImagePasteZone({
       {processando && (
         <div className="flex flex-col items-center gap-2 py-4">
           <Loader2 className={`size-8 ${colors.iconColor} animate-spin`} />
-          <p className={`text-sm font-medium ${colors.textColor}`}>Processando imagem...</p>
-          <p className="text-xs text-muted-foreground">Extraindo dados com OCR</p>
-          <p className="text-[10px] text-muted-foreground">Isso pode levar alguns segundos...</p>
-          <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
-            <div className={`${colors.iconColor.replace('text-', 'bg-')} h-1.5 rounded-full animate-pulse`} style={{width: '60%'}} />
+          <p className={`text-sm font-medium ${colors.textColor}`}>Processando...</p>
+          <p className="text-xs text-muted-foreground">Extraindo texto com OCR</p>
+          <p className="text-[10px] text-muted-foreground">⏱️ Pode levar 10-30 segundos</p>
+          <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1 overflow-hidden">
+            <div className={`${colors.iconColor.replace('text-', 'bg-')} h-full animate-pulse`} style={{width: '70%'}} />
           </div>
         </div>
       )}
 
-      {/* Preview da imagem + Sucesso */}
+      {/* Preview + Sucesso */}
       {imagemPreview && !processando && !erro && (
         <div className="relative">
           <img 
             src={imagemPreview} 
-            alt="Imagem do registro processada" 
+            alt="Imagem processada" 
             className="max-h-32 rounded-md mx-auto object-contain"
           />
           
-          {/* Botão de limpar */}
           <button
             type="button"
             onClick={(e) => {
@@ -328,37 +321,47 @@ export default function ImagePasteZone({
             <X className="size-4 text-gray-500" />
           </button>
 
-          {/* Badge de sucesso */}
           {sucesso && (
             <div className="absolute -top-2 -left-2 bg-green-500 text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-1">
               <CheckCircle2 className="size-3" />
-              OCR OK
+              OK
+            </div>
+          )}
+
+          {aviso && !sucesso && (
+            <div className="absolute -top-2 -left-2 bg-yellow-500 text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-1 max-w-[150px] truncate">
+              <AlertTriangle className="size-3" />
+              Parcial
             </div>
           )}
         </div>
       )}
 
-      {/* Mensagem de erro - Melhorada */}
+      {/* Aviso (amarelo - não é erro crítico) */}
+      {aviso && !erro && !processando && (
+        <div className="py-2 px-2 bg-yellow-50 rounded-md border border-yellow-200 mt-2">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="size-4 text-yellow-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs font-medium text-yellow-800">Aviso</p>
+              <p className="text-[11px] text-yellow-700 mt-0.5">{aviso}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Erro (vermelho) */}
       {erro && !processando && (
         <div className="py-3">
-          <div className="flex items-start gap-2 mb-2">
-            {erroRede ? (
-              <WifiOff className="size-5 text-orange-500 shrink-0 mt-0.5" />
-            ) : (
-              <X className="size-5 text-red-500 shrink-0 mt-0.5" />
-            )}
+          <div className="flex items-start gap-2 mb-3">
+            <X className="size-5 text-red-500 shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-red-600">
-                {erroRede ? 'Erro de Conexão / OCR' : 'Erro ao Processar'}
-              </p>
-              <p className="text-[11px] text-red-500 mt-1 whitespace-pre-line">
-                {erro.length > 150 ? erro.substring(0, 150) + '...' : erro}
-              </p>
+              <p className="text-xs font-medium text-red-600">Erro ao Processar</p>
+              <p className="text-[11px] text-red-500 mt-1">{erro}</p>
             </div>
           </div>
           
-          {/* Botões de ação */}
-          <div className="flex gap-2 mt-3 justify-center">
+          <div className="flex gap-2 justify-center">
             <button
               type="button"
               onClick={tentarNovamente}
@@ -379,17 +382,12 @@ export default function ImagePasteZone({
             </button>
           </div>
 
-          {/* Dica para erros de rede */}
-          {erroRede && (
-            <div className="mt-3 p-2 bg-orange-50 rounded-md border border-orange-200">
-              <p className="text-[10px] text-orange-700 font-medium">💡 Dicas:</p>
-              <ul className="text-[10px] text-orange-600 mt-1 space-y-0.5 list-disc list-inside">
-                <li>Verifique sua conexão com a internet</li>
-                <li>Tente recarregar a página (F5)</li>
-                <li>Se persistir, preencha os campos manualmente</li>
-              </ul>
-            </div>
-          )}
+          <div className="mt-3 p-2 bg-blue-50 rounded-md border border-blue-200">
+            <p className="text-[10px] text-blue-700 font-medium">💡 Alternativa:</p>
+            <p className="text-[10px] text-blue-600 mt-1">
+              Se o OCR continuar falhando, você pode preencher os campos manualmente abaixo.
+            </p>
+          </div>
         </div>
       )}
     </div>
