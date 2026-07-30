@@ -1,0 +1,1013 @@
+     1→"use client";
+     2→
+     3→import { useState, useEffect } from "react";
+     4→import { useRouter, useSearchParams } from "next/navigation";
+     5→import { Button } from "@/components/ui/button";
+     6→import { Input } from "@/components/ui/input";
+     7→import { Label } from "@/components/ui/label";
+     8→import { Badge } from "@/components/ui/badge";
+     9→import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+    10→import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+    11→import {
+    12→  Select,
+    13→  SelectContent,
+    14→  SelectItem,
+    15→  SelectTrigger,
+    16→  SelectValue,
+    17→} from "@/components/ui/select";
+    18→import {
+    19→  Dialog,
+    20→  DialogContent,
+    21→  DialogDescription,
+    22→  DialogHeader,
+    23→  DialogTitle,
+    24→  DialogTrigger,
+    25→} from "@/components/ui/dialog";
+    26→import {
+    27→  ArrowLeft,
+    28→  Save,
+    29→  Plus,
+    30→  Trash2,
+    31→  Edit2,
+    32→  Check,
+    33→  X,
+    34→  TreePine,
+    35→  User,
+    36→  Users,
+    37→  DollarSign,
+    38→  Clock,
+    39→  FileText,
+    40→  CalendarDays,
+    41→  MapPin,
+    42→  AlertCircle,
+    43→  ExternalLink,
+    44→} from "lucide-react";
+    45→import Image from "next/image";
+    46→import {
+    47→  Cliente,
+    48→  NoArvore,
+    49→  Despesa,
+    50→  EntradaTimeline,
+    51→  StatusCliente,
+    52→  getClienteById,
+    53→  updateCliente,
+    54→  addNoArvore,
+    55→  updateNoArvore,
+    56→  deleteNoArvore,
+    57→  addDespesa,
+    58→  updateStatusPagamento,
+    59→  deleteDespesa,
+    60→  addEntradaTimeline,
+    61→  deleteEntradaTimeline,
+    62→  calcularLucroLiquido,
+    63→  getStatusLabel,
+    64→  getStatusColor,
+    65→  getStatusRegistroLabel,
+    66→  getStatusRegistroColor,
+    67→  generateId,
+    68→} from "@/lib/crm-store";
+    69→
+    70→// Tree node component for visualization
+    71→function TreeNode({ 
+    72→  no, 
+    73→  onEdit, 
+    74→  depth = 0 
+    75→}: { 
+    76→  no: NoArvore; 
+    77→  onEdit: (no: NoArvore) => void;
+    78→  depth?: number;
+    79→}) {
+    80→  const relacaoLabels: Record<string, string> = {
+    81→    requerente: "Requerente",
+    82→    pai: "Pai",
+    83→    mae: "Mãe",
+    84→    avo_paterno: "Avô Paterno",
+    85→    avo_paterna: "Avó Paterna",
+    86→    avo_materno: "Avô Materno",
+    87→    avo_materna: "Avó Materna",
+    88→    ancestral: "Ancestral Europeu",
+    89→  };
+    90→
+    91→  return (
+    92→    <div 
+    93→      className="group relative"
+    94→      style={{ marginLeft: depth > 0 ? `${depth * 24}px` : 0 }}
+    95→    >
+    96→      <Card className={`transition-all hover:shadow-md cursor-pointer ${
+    97→        no.relacao === 'ancestral' ? 'border-gold/40 bg-gold/5' : 'border-navy/10'
+    98→      }`}>
+    99→        <CardContent className="p-3 sm:p-4" onClick={() => onEdit(no)}>
+   100→          <div className="flex items-start gap-3">
+   101→            {/* Icon */}
+   102→            <div className={`size-10 rounded-lg flex items-center justify-center shrink-0 ${
+   103→              no.relacao === 'ancestral' ? 'bg-gold/20' : 'bg-navy/10'
+   104→            }`}>
+   105→              {no.relacao === 'requerente' || no.relacao === 'ancestral' ? (
+   106→                <User className={`size-5 ${no.relacao === 'ancestral' ? 'text-gold-dark' : 'text-navy'}`} />
+   107→              ) : (
+   108→                <Users className="size-5 text-navy/70" />
+   109→              )}
+   110→            </div>
+   111→
+   112→            {/* Info */}
+   113→            <div className="flex-1 min-w-0">
+   114→              <div className="flex items-center gap-2 flex-wrap">
+   115→                <h4 className="font-medium text-navy truncate">{no.nomeCompleto}</h4>
+   116→                <Badge variant="outline" className="text-[10px]">
+   117→                  {relacaoLabels[no.relacao] || no.relacao}
+   118→                </Badge>
+   119→                <Badge className={`${getStatusRegistroColor(no.statusRegistro)} text-[10px]`}>
+   120→                  {getStatusRegistroLabel(no.statusRegistro)}
+   121→                </Badge>
+   122→              </div>
+   123→              
+   124→              {(no.nascimento || no.casamento || no.obito) && (
+   125→                <div className="flex flex-wrap gap-2 mt-1.5 text-[11px] text-muted-foreground">
+   126→                  {no.nascimento && (
+   127→                    <span className="flex items-center gap-1">
+   128→                      <CalendarDays className="size-3" />
+   129→                      Nasc: {no.nascimento.data}{no.nascimento.local ? ` - ${no.nascimento.local}` : ''}
+   130→                    </span>
+   131→                  )}
+   132→                  {no.casamento && (
+   133→                    <span className="flex items-center gap-1">
+   134→                      <FileText className="size-3" />
+   135→                      Casam: {no.casamento.data}
+   136→                    </span>
+   137→                  )}
+   138→                  {no.obito && (
+   139→                    <span className="flex items-center gap-1">
+   140→                      <AlertCircle className="size-3" />
+   141→                      Óbito: {no.obito.data}
+   142→                    </span>
+   143→                  )}
+   144→                </div>
+   145→              )}
+   146→              
+   147→              {no.variacoesGrafia && (
+   148→                <p className="mt-1 text-[11px] text-muted-foreground italic">
+   149→                  Var.: {no.variacoesGrafia}
+   150→                </p>
+   151→              )}
+   152→            </div>
+   153→
+   154→            {/* Edit indicator */}
+   155→            <Edit2 className="size-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+   156→          </div>
+   157→        </CardContent>
+   158→      </Card>
+   159→
+   160→      {/* Connector line */}
+   161→      {depth < 3 && (
+   162→        <div className="w-px h-4 bg-navy/20 ml-5" />
+   163→      )}
+   164→    </div>
+   165→  );
+   166→}
+   167→
+   168→export default function FichaCliente() {
+   169→  const router = useRouter();
+   170→  const searchParams = useSearchParams();
+   171→  const clienteId = searchParams.get("cliente");
+   172→  
+   173→  const [cliente, setCliente] = useState<Cliente | null>(null);
+   174→  const [abaAtiva, setAbaAtiva] = useState("arvore");
+   175→  const [salvando, setSalvando] = useState(false);
+   176→  
+   177→  // Modal states
+   178→  const [noSelecionado, setNoSelecionado] = useState<NoArvore | null>(null);
+   179→  const [dialogNoAberto, setDialogNoAberto] = useState(false);
+   180→  const [dialogNovoNoAberto, setDialogNovoNoAberto] = useState(false);
+   181→  const [dialogDespesaAberto, setDialogDespesaAberto] = useState(false);
+   182→  
+   183→  // Form states
+   184→  const [novoNoRelacao, setNovoNoRelacao] = useState("pai");
+   185→  const [formNo, setFormNo] = useState<Partial<NoArvore>>({});
+   186→  const [formDespesa, setFormDespesa] = useState({
+   187→    descricao: "",
+   188→    valor: "",
+   189→    moeda: "BRL" as "BRL" | "EUR" | "USD",
+   190→    categoria: "outro" as Despesa["categoria"],
+   191→  });
+   192→  const [novaEntradaTitulo, setNovaEntradaTitulo] = useState("");
+   193→  const [novaEntradaDescricao, setNovaEntradaDescricao] = useState("");
+   194→  const [novoLink, setNovoLink] = useState("");
+   195→
+   196→  // Load client data
+   197→  function carregarCliente() {
+   198→    if (clienteId) {
+   199→      const c = getClienteById(clienteId);
+   200→      if (c) {
+   201→        setCliente(c);
+   202→      } else {
+   203→        router.push("/painel");
+   204→      }
+   205→    }
+   206→  }
+   207→
+   208→  useEffect(() => {
+   209→    carregarCliente();
+   210→  }, [clienteId]);
+   211→
+   212→  async function handleSalvar() {
+   213→    if (!cliente) return;
+   214→    
+   215→    setSalvando(true);
+   216→    await new Promise(r => setTimeout(r, 500));
+   217→    
+   218→    updateCliente(cliente.id, cliente);
+   219→    setSalvando(false);
+   220→    
+   221→    // Show success feedback
+   222→    alert("Ficha salva com sucesso!");
+   223→  }
+   224→
+   225→  function handleStatusChange(novoStatus: StatusCliente) {
+   226→    if (!cliente) return;
+   227→    setCliente({ ...cliente, status: novoStatus });
+   228→  }
+   229→
+   230→  // Tree operations
+   231→  function abrirEditarNo(no: NoArvore) {
+   232→    setFormNo({ ...no });
+   233→    setNoSelecionado(no);
+   234→    setDialogNoAberto(true);
+   235→  }
+   236→
+   237→  function salvarNo() {
+   238→    if (!cliente || !noSelecionado) return;
+   239→    
+   240→    const atualizado = updateNoArvore(cliente.id, noSelecionado.id, formNo);
+   241→    if (atualizado) {
+   242→      setCliente({
+   243→        ...cliente,
+   244→        arvore: cliente.arvore.map(n => n.id === noSelecionado.id ? atualizado! : n)
+   245→      });
+   246→    }
+   247→    
+   248→    setDialogNoAberto(false);
+   249→    setNoSelecionado(null);
+   250→    setFormNo({});
+   251→  }
+   252→
+   253→  function adicionarNovoNo() {
+   254→    if (!cliente) return;
+   255→    
+   256→    const novoNo = addNoArvore(cliente.id, {
+   257→      nomeCompleto: "",
+   258→      relacao: novoNoRelacao as NoArvore["relacao"],
+   259→      statusRegistro: "pendente",
+   260→      variacoesGrafia: "",
+   261→      anotacoesCartorio: "",
+   262→    });
+   263→    
+   264→    if (novoNo) {
+   265→      setCliente({
+   266→        ...cliente,
+   267→        arvore: [...cliente.arvore, novoNo]
+   268→      });
+   269→      
+   270→      // Open edit dialog for the new node
+   271→      setFormNo({ ...novoNo });
+   272→      setNoSelecionado(novoNo);
+   273→      setDialogNoAberto(true);
+   274→    }
+   275→    
+   276→    setDialogNovoNoAberto(false);
+   277→  }
+   278→
+   279→  function excluirNo(noId: string) {
+   280→    if (!cliente) return;
+   281→    
+   282→    deleteNoArvore(cliente.id, noId);
+   283→    setCliente({
+   284→      ...cliente,
+   285→      arvore: cliente.arvore.filter(n => n.id !== noId)
+   286→    });
+   287→  }
+   288→
+   289→  // Financial operations
+   290→  function adicionarDespesa() {
+   291→    if (!cliente) return;
+   292→    
+   293→    const valorNumerico = parseFloat(formDespesa.valor.replace(",", "."));
+   294→    if (isNaN(valorNumerico)) {
+   295→      alert("Valor inválido");
+   296→      return;
+   297→    }
+   298→    
+   299→    const novaDespesa = addDespesa(cliente.id, {
+   300→      descricao: formDespesa.descricao,
+   301→      valor: valorNumerico,
+   302→      moeda: formDespesa.moeda,
+   303→      data: new Date().toLocaleDateString("pt-BR"),
+   304→      categoria: formDespesa.categoria,
+   305→    });
+   306→    
+   307→    if (novaDespesa) {
+   308→      setCliente({
+   309→        ...cliente,
+   310→        financeiro: {
+   311→          ...cliente.financeiro,
+   312→          despesas: [...cliente.financeiro.despesas, novaDespesa]
+   313→        }
+   314→      });
+   315→    }
+   316→    
+   317→    setDialogDespesaAberto(false);
+   318→    setFormDespesa({ descricao: "", valor: "", moeda: "BRL", categoria: "outro" });
+   319→  }
+   320→
+   321→  function excluirDespesa(despesaId: string) {
+   322→    if (!cliente) return;
+   323→    
+   324→    deleteDespesa(cliente.id, despesaId);
+   325→    setCliente({
+   326→      ...cliente,
+   327→      financeiro: {
+   328→        ...cliente.financeiro,
+   329→        despesas: cliente.financeiro.despesas.filter(d => d.id !== despesaId)
+   330→      }
+   331→    });
+   332→  }
+   333→
+   334→  function alterarStatusPagamento(tipo: "taxaAnalise" | "taxaSucesso", status: "pago" | "pendente" | "aguardando") {
+   335→    if (!cliente) return;
+   336→    
+   337→    updateStatusPagamento(cliente.id, tipo, status);
+   338→    
+   339→    setCliente({
+   340→      ...cliente,
+   341→      financeiro: {
+   342→        ...cliente.financeiro,
+   343→        [tipo]: {
+   344→          ...cliente.financeiro[tipo],
+   345→          status
+   346→        }
+   347→      }
+   348→    });
+   349→  }
+   350→
+   351→  // Timeline operations
+   352→  function adicionarEntradaTimeline() {
+   353→    if (!cliente || !novaEntradaTitulo.trim()) return;
+   354→    
+   355→    const links = novoLink.trim() ? [novoLink.trim()] : undefined;
+   356→    
+   357→    const novaEntrada = addEntradaTimeline(cliente.id, {
+   358→      data: new Date().toLocaleDateString("pt-BR"),
+   359→      titulo: novaEntradaTitulo.trim(),
+   360→      descricao: novaEntradaDescricao.trim(),
+   361→      links,
+   362→    });
+   363→    
+   364→    if (novaEntrada) {
+   365→      setCliente({
+   366→        ...cliente,
+   367→        timeline: [novaEntrada, ...cliente.timeline]
+   368→      });
+   369→    }
+   370→    
+   371→    setNovaEntradaTitulo("");
+   372→    setNovaEntradaDescricao("");
+   373→    setNovoLink("");
+   374→  }
+   375→
+   376→  function excluirEntrada(entradaId: string) {
+   377→    if (!cliente) return;
+   378→    
+   379→    deleteEntradaTimeline(cliente.id, entradaId);
+   380→    setCliente({
+   381→      ...cliente,
+   382→      timeline: cliente.timeline.filter(e => e.id !== entradaId)
+   383→    });
+   384→  }
+   385→
+   386→  if (!cliente) {
+   387→    return (
+   388→      <div className="flex items-center justify-center h-64">
+   389→        <div className="size-8 border-3 border-navy/20 border-t-navy rounded-full animate-spin" />
+   390→      </div>
+   391→    );
+   392→  }
+   393→
+   394→  const lucroLiquido = calcularLucroLiquido(cliente);
+   395→
+   396→  return (
+   397→    <div className="space-y-6">
+   398→      {/* Header */}
+   399→      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+   400→        <div className="flex items-center gap-3">
+   401→          <Button
+   402→            variant="ghost"
+   403→            size="icon"
+   404→            onClick={() => router.push("/painel")}
+   405→            className="text-navy"
+   406→          >
+   407→            <ArrowLeft className="size-5" />
+   408→          </Button>
+   409→          
+   410→          <div>
+   411→            <h1 className="font-serif text-xl font-700 text-navy sm:text-2xl">
+   412→              {cliente.nome}
+   413→            </h1>
+   414→            <p className="text-sm text-muted-foreground">
+   415→              Cliente desde {cliente.dataEntrada} • ID: {cliente.id.slice(-6).toUpperCase()}
+   416→            </p>
+   417→          </div>
+   418→        </div>
+   419→
+   420→        <div className="flex items-center gap-2">
+   421→          {/* Status selector */}
+   422→          <Select value={cliente.status} onValueChange={(v) => handleStatusChange(v as StatusCliente)}>
+   423→            <SelectTrigger className="w-44 border-navy/20">
+   424→              <SelectValue />
+   425→            </SelectTrigger>
+   426→            <SelectContent>
+   427→              <SelectItem value="em_analise">Em Análise</SelectItem>
+   428→              <SelectItem value="pesquisa_europa">Pesquisa na Europa</SelectItem>
+   429→              <SelectItem value="aguardando_emissao">Aguardando Emissão</SelectItem>
+   430→              <SelectItem value="concluido">Concluído</SelectItem>
+   431→              <SelectItem value="cancelado">Cancelado</SelectItem>
+   432→            </SelectContent>
+   433→          </Select>
+   434→
+   435→          <Button
+   436→            onClick={handleSalvar}
+   437→            disabled={salvando}
+   438→            className="bg-navy hover:bg-navy-light text-white"
+   439→          >
+   440→            {salvando ? (
+   441→              <span className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+   442→            ) : (
+   443→              <Save className="size-4 mr-2" />
+   444→            )}
+   445→            Salvar
+   446→          </Button>
+   447→        </div>
+   448→      </div>
+   449→
+   450→      {/* Tabs */}
+   451→      <Tabs value={abaAtiva} onValueChange={setAbaAtiva}>
+   452→        <TabsList className="bg-navy/5 border border-border w-full justify-start overflow-x-auto">
+   453→          <TabsTrigger value="arvore" className="data-[state=active]:bg-navy data-[state=active]:text-white">
+   454→            <TreePine className="size-4 mr-2" />
+   455→            Árvore Genealógica
+   456→          </TabsTrigger>
+   457→          <TabsTrigger value="financeiro" className="data-[state=active]:bg-navy data-[state=active]:text-white">
+   458→            <DollarSign className="size-4 mr-2" />
+   459→            Financeiro
+   460→          </TabsTrigger>
+   461→          <TabsTrigger value="timeline" className="data-[state=active]:bg-navy data-[state=active]:text-white">
+   462→            <Clock className="size-4 mr-2" />
+   463→            Diário de Pesquisa
+   464→          </TabsTrigger>
+   465→        </TabsList>
+   466→
+   467→        {/* TAB 1: Árvore Genealógica */}
+   468→        <TabsContent value="arvore" className="mt-6 space-y-6">
+   469→          <div className="flex items-center justify-between">
+   470→            <div>
+   471→              <h2 className="font-serif text-lg font-600 text-navy">
+   472→                Linhagem Familiar & Documentos
+   473→              </h2>
+   474→              <p className="text-sm text-muted-foreground mt-1">
+   475→                Clique em qualquer nó da árvore para editar os dados. Adicione membros da família para mapear a linhagem completa.
+   476→              </p>
+   477→            </div>
+   478→            
+   479→            <Dialog open={dialogNovoNoAberto} onOpenChange={setDialogNovoNoAberto}>
+   480→              <DialogTrigger asChild>
+   481→                <Button variant="outline" className="border-navy/30 text-navy hover:bg-navy hover:text-white">
+   482→                  <Plus className="size-4 mr-2" />
+   483→                  Adicionar Membro
+   484→                </Button>
+   485→              </DialogTrigger>
+   486→              <DialogContent>
+   487→                <DialogHeader>
+   488→                  <DialogTitle className="font-serif text-navy">Adicionar Membro da Família</DialogTitle>
+   489→                  <DialogDescription>
+   490→                    Selecione o grau de parentesco do novo membro.
+   491→                  </DialogDescription>
+   492→                </DialogHeader>
+   493→                
+   494→                <div className="space-y-4 mt-4">
+   495→                  <div className="space-y-2">
+   496→                    <label className="text-sm font-medium text-navy">Grau de Parentesco *</label>
+   497→                    <Select value={novoNoRelacao} onValueChange={setNovoNoRelacao}>
+   498→                      <SelectTrigger>
+   499→                        <SelectValue />
+   500→                      </SelectTrigger>
+   501→                      <SelectContent>
+   502→                        <SelectItem value="pai">Pai</SelectItem>
+   503→                        <SelectItem value="mae">Mãe</SelectItem>
+   504→                        <SelectItem value="avo_paterno">Avô Paterno</SelectItem>
+   505→                        <SelectItem value="avo_paterna">Avó Paterna</SelectItem>
+   506→                        <SelectItem value="avo_materno">Avô Materno</SelectItem>
+   507→                        <SelectItem value="avo_materna">Avó Materna</SelectItem>
+   508→                        <SelectItem value="ancestral">Ancestral Europeu / Emigrante</SelectItem>
+   509→                      </SelectContent>
+   510→                    </Select>
+   511→                  </div>
+   512→
+   513→                  <div className="flex justify-end gap-2 pt-2">
+   514→                    <Button variant="outline" onClick={() => setDialogNovoNoAberto(false)}>
+   515→                      Cancelar
+   516→                    </Button>
+   517→                    <Button onClick={adicionarNovoNo} className="bg-navy hover:bg-navy-light text-white">
+   518→                      Adicionar
+   519→                    </Button>
+   520→                  </div>
+   521→                </div>
+   522→              </DialogContent>
+   523→            </Dialog>
+   524→          </div>
+   525→
+   526→          {/* Tree visualization */}
+   527→          <div className="space-y-3">
+   528→            {cliente.arvore.length === 0 ? (
+   529→              <Card className="border-dashed border-2">
+   530→                <CardContent className="py-12 text-center">
+   531→                  <TreePine className="size-12 mx-auto text-muted-foreground/30 mb-4" />
+   532→                  <h3 className="font-serif text-lg font-600 text-navy mb-2">
+   533→                    Árvore Vazia
+   534→                  </h3>
+   535→                  <p className="text-sm text-muted-foreground">
+   536→                    Adicione membros da família para começar a montar a árvore genealógica.
+   537→                  </p>
+   538→                </CardContent>
+   539→              </Card>
+   540→            ) : (
+   541→              cliente.arvore.map((no) => (
+   542→                <div key={no.id} className="relative group/item">
+   543→                  <TreeNode 
+   544→                    no={no} 
+   545→                    onEdit={abrirEditarNo}
+   546→                    depth={no.relacao === 'requerente' ? 0 : 
+   547→                          ['pai', 'mae'].includes(no.relacao) ? 1 :
+   548→                          no.relacao.includes('avo') ? 2 : 3}
+   549→                  />
+   550→                  
+   551→                  {/* Delete button */}
+   552→                  {no.relacao !== 'requerente' && (
+   553→                    <button
+   554→                      onClick={() => excluirNo(no.id)}
+   555→                      className="absolute right-2 top-2 opacity-0 group-hover/item:opacity-100 transition-opacity p-1.5 rounded-md bg-red-50 text-red-500 hover:bg-red-100"
+   556→                    >
+   557→                      <Trash2 className="size-4" />
+   558→                    </button>
+   559→                  )}
+   560→                </div>
+   561→              ))
+   562→            )}
+   563→          </div>
+   564→        </TabsContent>
+   565→
+   566→        {/* TAB 2: Financeiro */}
+   567→        <TabsContent value="financeiro" className="mt-6 space-y-6">
+   568→          <div>
+   569→            <h2 className="font-serif text-lg font-600 text-navy">
+   570→              Financeiro & Emolumentos Operacionais
+   571→            </h2>
+   572→            <p className="text-sm text-muted-foreground mt-1">
+   573→              Controle recebimentos, gastos operacionais e calcule o lucro líquido do caso.
+   574→            </p>
+   575→          </div>
+   576→
+   577→          <div className="grid gap-6 lg:grid-cols-2">
+   578→            {/* Recebimentos */}
+   579→            <Card className="border-green-200">
+   580→              <CardHeader className="pb-3">
+   581→                <CardTitle className="text-base font-600 text-green-800 flex items-center gap-2">
+   582→                  <DollarSign className="size-5" />
+   583→                  Resumo de Recebimentos
+   584→                </CardTitle>
+   585→              </CardHeader>
+   586→              <CardContent className="space-y-4">
+   587→                {/* Taxa de Análise */}
+   588→                <div className="flex items-center justify-between p-3 rounded-lg bg-green-50">
+   589→                  <div>
+   590→                    <p className="font-medium text-green-900">Taxa de Análise Inicial</p>
+   591→                    <p className="text-sm text-green-700">R$ {cliente.financeiro.taxaAnalise.valor.toFixed(2).replace(".", ",")}</p>
+   592→                  </div>
+   593→                  <Select 
+   594→                    value={cliente.financeiro.taxaAnalise.status} 
+   595→                    onValueChange={(v) => alterarStatusPagamento("taxaAnalise", v as "pago" | "pendente")}
+   596→                  >
+   597→                    <SelectTrigger className="w-28 border-green-300">
+   598→                      <SelectValue />
+   599→                    </SelectTrigger>
+   600→                    <SelectContent>
+   601→                      <SelectItem value="pendente">Pendente</SelectItem>
+   602→                      <SelectItem value="pago">Pago ✓</SelectItem>
+   603→                    </SelectContent>
+   604→                  </Select>
+   605→                </div>
+   606→
+   607→                {/* Taxa de Sucesso */}
+   608→                <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50">
+   609→                  <div>
+   610→                    <p className="font-medium text-blue-900">Taxa de Sucesso</p>
+   611→                    <p className="text-sm text-blue-700">R$ {cliente.financeiro.taxaSucesso.valor.toFixed(2).replace(".", ",")}</p>
+   612→                  </div>
+   613→                  <Select 
+   614→                    value={cliente.financeiro.taxaSucesso.status} 
+   615→                    onValueChange={(v) => alterarStatusPagamento("taxaSucesso", v as "pago" | "pendente" | "aguardando")}
+   616→                  >
+   617→                    <SelectTrigger className="w-32 border-blue-300">
+   618→                      <SelectValue />
+   619→                    </SelectTrigger>
+   620→                    <SelectContent>
+   621→                      <SelectItem value="aguardando">Aguardando</SelectItem>
+   622→                      <SelectItem value="pendente">Pendente</SelectItem>
+   623→                      <SelectItem value="pago">Pago ✓</SelectItem>
+   624→                    </SelectContent>
+   625→                  </Select>
+   626→                </div>
+   627→
+   628→                {/* Lucro Líquido */}
+   629→                <div className={`p-4 rounded-lg ${lucroLiquido >= 0 ? 'bg-green-100' : 'bg-red-100'}`}>
+   630→                  <div className="flex items-center justify-between">
+   631→                    <span className={`font-600 ${lucroLiquido >= 0 ? 'text-green-800' : 'text-red-800'}`}>
+   632→                      💰 Lucro Líquido
+   633→                    </span>
+   634→                    <span className={`text-xl font-700 ${lucroLiquido >= 0 ? 'text-green-900' : 'text-red-900'}`}>
+   635→                      R$ {lucroLiquido.toFixed(2).replace(".", ",")}
+   636→                    </span>
+   637→                  </div>
+   638→                </div>
+   639→              </CardContent>
+   640→            </Card>
+   641→
+   642→            {/* Despesas */}
+   643→            <Card className="border-orange-200">
+   644→              <CardHeader className="pb-3">
+   645→                <div className="flex items-center justify-between">
+   646→                  <CardTitle className="text-base font-600 text-orange-800 flex items-center gap-2">
+   647→                    <FileText className="size-5" />
+   648→                    Emolumentos & Custos
+   649→                  </CardTitle>
+   650→                  
+   651→                  <Dialog open={dialogDespesaAberto} onOpenChange={setDialogDespesaAberto}>
+   652→                    <DialogTrigger asChild>
+   653→                      <Button size="sm" variant="outline" className="border-orange-300 text-orange-700 hover:bg-orange-50">
+   654→                        <Plus className="size-4 mr-1" />
+   655→                        Nova Despesa
+   656→                      </Button>
+   657→                    </DialogTrigger>
+   658→                    <DialogContent>
+   659→                      <DialogHeader>
+   660→                        <DialogTitle className="font-serif text-navy">Adicionar Despesa</DialogTitle>
+   661→                        <DialogDescription>
+   662→                          Registre um gasto operacional do caso.
+   663→                        </DialogDescription>
+   664→                      </DialogHeader>
+   665→                      
+   666→                      <div className="space-y-4 mt-4">
+   667→                        <div className="space-y-2">
+   668→                          <label className="text-sm font-medium text-navy">Descrição *</label>
+   669→                          <Input
+   670→                            placeholder="Ex: Taxa do Standesamt"
+   671→                            value={formDespesa.descricao}
+   672→                            onChange={(e) => setFormDespesa({...formDespesa, descricao: e.target.value})}
+   673→                          />
+   674→                        </div>
+   675→                        
+   676→                        <div className="grid grid-cols-2 gap-3">
+   677→                          <div className="space-y-2">
+   678→                            <label className="text-sm font-medium text-navy">Valor *</label>
+   679→                            <Input
+   680→                              placeholder="0,00"
+   681→                              value={formDespesa.valor}
+   682→                              onChange={(e) => setFormDespesa({...formDespesa, valor: e.target.value})}
+   683→                            />
+   684→                          </div>
+   685→                          
+   686→                          <div className="space-y-2">
+   687→                            <label className="text-sm font-medium text-navy">Moeda</label>
+   688→                            <Select value={formDespesa.moeda} onValueChange={(v) => setFormDespesa({...formDespesa, moeda: v as "BRL" | "EUR" | "USD"})}>
+   689→                              <SelectTrigger>
+   690→                                <SelectValue />
+   691→                              </SelectTrigger>
+   692→                              <SelectContent>
+   693→                                <SelectItem value="BRL">R$ BRL</SelectItem>
+   694→                                <SelectItem value="EUR">€ EUR</SelectItem>
+   695→                                <SelectItem value="USD">$ USD</SelectItem>
+   696→                              </SelectContent>
+   697→                            </Select>
+   698→                          </div>
+   699→                        </div>
+   700→                        
+   701→                        <div className="space-y-2">
+   702→                          <label className="text-sm font-medium text-navy">Categoria</label>
+   703→                          <Select value={formDespesa.categoria} onValueChange={(v) => setFormDespesa({...formDespesa, categoria: v as Despesa["categoria"]})}>
+   704→                            <SelectTrigger>
+   705→                              <SelectValue />
+   706→                            </SelectTrigger>
+   707→                            <SelectContent>
+   708→                              <SelectItem value="taxa_arquivo">Taxa de Arquivo</SelectItem>
+   709→                              <SelectItem value="frete">Frete/Correio</SelectItem>
+   710→                              <SelectItem value="cartorio_br">Cartório BR</SelectItem>
+   711→                              <SelectItem value="traducao">Tradução</SelectItem>
+   712→                              <SelectItem value="outro">Outro</SelectItem>
+   713→                            </SelectContent>
+   714→                          </Select>
+   715→                        </div>
+   716→
+   717→                        <div className="flex justify-end gap-2 pt-2">
+   718→                          <Button variant="outline" onClick={() => setDialogDespesaAberto(false)}>
+   719→                            Cancelar
+   720→                          </Button>
+   721→                          <Button onClick={adicionarDespesa} className="bg-navy hover:bg-navy-light text-white">
+   722→                            Adicionar
+   723→                          </Button>
+   724→                        </div>
+   725→                      </div>
+   726→                    </DialogContent>
+   727→                  </Dialog>
+   728→                </div>
+   729→              </CardHeader>
+   730→              <CardContent>
+   731→                {cliente.financeiro.despesas.length === 0 ? (
+   732→                  <p className="text-sm text-muted-foreground text-center py-4">
+   733→                    Nenhuma despesa registrada.
+   734→                  </p>
+   735→                ) : (
+   736→                  <div className="space-y-2 max-h-64 overflow-y-auto elegant-scroll">
+   737→                    {cliente.financeiro.despesas.map((desp) => (
+   738→                      <div key={desp.id} className="flex items-center justify-between p-2 rounded bg-orange-50/50 group">
+   739→                        <div className="min-w-0 flex-1">
+   740→                          <p className="text-sm font-medium text-orange-900 truncate">{desp.descricao}</p>
+   741→                          <p className="text-xs text-orange-700">{desp.data} • {desp.categoria.replace("_", " ")}</p>
+   742→                        </div>
+   743→                        <div className="flex items-center gap-2">
+   744→                          <span className="font-600 text-orange-800 whitespace-nowrap">
+   745→                            {desp.moeda === "BRL" ? "R$" : desp.moeda === "EUR" ? "€" : "$"} {desp.valor.toFixed(2).replace(".", ",")}
+   746→                          </span>
+   747→                          <button
+   748→                            onClick={() => excluirDespesa(desp.id)}
+   749→                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded text-red-500 hover:bg-red-50"
+   750→                          >
+   751→                            <Trash2 className="size-3.5" />
+   752→                          </button>
+   753→                        </div>
+   754→                      </div>
+   755→                    ))}
+   756→                    
+   757→                    {/* Total despesas */}
+   758→                    <div className="pt-2 mt-2 border-t border-orange-200 flex justify-between text-sm font-600 text-orange-900">
+   759→                      <span>Total de Despesas:</span>
+   760→                      <span>R$ {cliente.financeiro.despesas.reduce((s, d) => s + d.valor, 0).toFixed(2).replace(".", ",")}</span>
+   761→                    </div>
+   762→                  </div>
+   763→                )}
+   764→              </CardContent>
+   765→            </Card>
+   766→          </div>
+   767→        </TabsContent>
+   768→
+   769→        {/* TAB 3: Timeline */}
+   770→        <TabsContent value="timeline" className="mt-6 space-y-6">
+   771→          <div>
+   772→            <h2 className="font-serif text-lg font-600 text-navy">
+   773→              Diário de Pesquisa
+   774→            </h2>
+   775→            <p className="text-sm text-muted-foreground mt-1">
+   776→              Registre o progresso da investigação, comunicações com arquivos europeus e marcos importantes.
+   777→            </p>
+   778→          </div>
+   779→
+   780→          {/* Quick add entry */}
+   781→          <Card className="border-navy/10">
+   782→            <CardContent className="p-4 space-y-3">
+   783→              <div className="grid gap-3 sm:grid-cols-2">
+   784→                <Input
+   785→                  placeholder="Título do evento (ex: E-mail enviado ao arquivo)"
+   786→                  value={novaEntradaTitulo}
+   787→                  onChange={(e) => setNovaEntradaTitulo(e.target.value)}
+   788→                />
+   789→                <Input
+   790→                  placeholder="Link opcional (ex: Google Drive)"
+   791→                  value={novoLink}
+   792→                  onChange={(e) => setNovoLink(e.target.value)}
+   793→                />
+   794→              </div>
+   795→              <textarea
+   796→                placeholder="Descrição detalhada do progresso..."
+   797→                value={novaEntradaDescricao}
+   798→                onChange={(e) => setNovaEntradaDescricao(e.target.value)}
+   799→                rows={2}
+   800→                className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+   801→              />
+   802→              <div className="flex justify-end">
+   803→                <Button
+   804→                  onClick={adicionarEntradaTimeline}
+   805→                  disabled={!novaEntradaTitulo.trim()}
+   806→                  className="bg-navy hover:bg-navy-light text-white"
+   807→                >
+   808→                  <Plus className="size-4 mr-2" />
+   809→                  Registrar Entrada
+   810→                </Button>
+   811→              </div>
+   812→            </CardContent>
+   813→          </Card>
+   814→
+   815→          {/* Timeline list */}
+   816→          {cliente.timeline.length === 0 ? (
+   817→            <Card className="border-dashed border-2">
+   818→              <CardContent className="py-12 text-center">
+   819→                <Clock className="size-12 mx-auto text-muted-foreground/30 mb-4" />
+   820→                <h3 className="font-serif text-lg font-600 text-navy mb-2">
+   821→                  Nenhum Registro Ainda
+   822→                </h3>
+   823→                <p className="text-sm text-muted-foreground">
+   824→                  Comece a documentar o progresso da pesquisa adicionando entradas acima.
+   825→                </p>
+   826→              </CardContent>
+   827→            </Card>
+   828→          ) : (
+   829→            <div className="space-y-3">
+   830→              {cliente.timeline.map((entrada) => (
+   831→                <Card key={entrada.id} className="border-navy/10 group relative">
+   832→                  <CardContent className="p-4">
+   833→                    <div className="flex items-start gap-3">
+   834→                      {/* Timeline dot */}
+   835→                      <div className="mt-1 size-3 rounded-full bg-navy shrink-0" />
+   836→                      
+   837→                      <div className="flex-1 min-w-0">
+   838→                        <div className="flex items-start justify-between gap-2">
+   839→                          <div>
+   840→                            <div className="flex items-center gap-2 flex-wrap">
+   841→                              <span className="text-xs font-500 text-gold-dark bg-gold/10 px-2 py-0.5 rounded">
+   842→                                {entrada.data}
+   843→                              </span>
+   844→                              <h4 className="font-medium text-navy">{entrada.titulo}</h4>
+   845→                            </div>
+   846→                            
+   847→                            {entrada.descricao && (
+   848→                              <p className="mt-1 text-sm text-muted-foreground">
+   849→                                {entrada.descricao}
+   850→                              </p>
+   851→                            )}
+   852→                            
+   853→                            {entrada.links && entrada.links.length > 0 && (
+   854→                              <div className="mt-2 flex flex-wrap gap-2">
+   855→                                {entrada.links.map((link, i) => (
+   856→                                  <a
+   857→                                    key={i}
+   858→                                    href={link}
+   859→                                    target="_blank"
+   860→                                    rel="noopener noreferrer"
+   861→                                    className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 underline"
+   862→                                  >
+   863→                                    <ExternalLink className="size-3" />
+   864→                                    Abrir Link
+   865→                                  </a>
+   866→                                ))}
+   867→                              </div>
+   868→                            )}
+   869→                          </div>
+   870→                          
+   871→                          <button
+   872→                            onClick={() => excluirEntrada(entrada.id)}
+   873→                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-md bg-red-50 text-red-500 hover:bg-red-100 shrink-0"
+   874→                          >
+   875→                            <Trash2 className="size-4" />
+   876→                          </button>
+   877→                        </div>
+   878→                      </div>
+   879→                    </div>
+   880→                  </CardContent>
+   881→                </Card>
+   882→              ))}
+   883→            </div>
+   884→          )}
+   885→        </TabsContent>
+   886→      </Tabs>
+   887→
+   888→      {/* Edit Node Modal */}
+   889→      <Dialog open={dialogNoAberto} onOpenChange={setDialogNoAberto}>
+   890→        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+   891→          <DialogHeader>
+   892→            <DialogTitle className="font-serif text-navy flex items-center gap-2">
+   893→              <User className="size-5" />
+   894→              Editar Membro da Família
+   895→            </DialogTitle>
+   896→            <DialogDescription>
+   897→              Atualize os dados pessoais e registros deste membro.
+   898→            </DialogDescription>
+   899→          </DialogHeader>
+   900→          
+   901→          <div className="space-y-4 mt-4">
+   902→            <div className="space-y-2">
+   903→              <label className="text-sm font-medium text-navy">Nome Completo *</label>
+   904→              <Input
+   905→                value={formNo.nomeCompleto || ""}
+   906→                onChange={(e) => setFormNo({...formNo, nomeCompleto: e.target.value})}
+   907→              />
+   908→            </div>
+   909→
+   910→            <div className="grid grid-cols-2 gap-3">
+   911→              <div className="space-y-2">
+   912→                <label className="text-sm font-medium text-navy">Data Nascimento</label>
+   913→                <Input
+   914→                  placeholder="DD/MM/YYYY"
+   915→                  value={formNo.nascimento?.data || ""}
+   916→                  onChange={(e) => setFormNo({
+   917→                    ...formNo, 
+   918→                    nascimento: {...(formNo.nascimento || {}), data: e.target.value}
+   919→                  })}
+   920→                />
+   921→              </div>
+   922→              <div className="space-y-2">
+   923→                <label className="text-sm font-medium text-navy">Local Nasc.</label>
+   924→                <Input
+   925→                  placeholder="Cidade, País"
+   926→                  value={formNo.nascimento?.local || ""}
+   927→                  onChange={(e) => setFormNo({
+   928→                    ...formNo, 
+   929→                    nascimento: {...(formNo.nascimento || {}), local: e.target.value}
+   930→                  })}
+   931→                />
+   932→              </div>
+   933→            </div>
+   934→
+   935→            <div className="grid grid-cols-2 gap-3">
+   936→              <div className="space-y-2">
+   937→                <label className="text-sm font-medium text-navy">Data Casamento</label>
+   938→                <Input
+   939→                  placeholder="DD/MM/YYYY"
+   940→                  value={formNo.casamento?.data || ""}
+   941→                  onChange={(e) => setFormNo({
+   942→                    ...formNo, 
+   943→                    casamento: {...(formNo.casamento || {}), data: e.target.value}
+   944→                  })}
+   945→                />
+   946→              </div>
+   947→              <div className="space-y-2">
+   948→                <label className="text-sm font-medium text-navy">Data Óbito</label>
+   949→                <Input
+   950→                  placeholder="DD/MM/YYYY"
+   951→                  value={formNo.obito?.data || ""}
+   952→                  onChange={(e) => setFormNo({
+   953→                    ...formNo, 
+   954→                    obito: {...(formNo.obito || {}), data: e.target.value}
+   955→                  })}
+   956→                />
+   957→              </div>
+   958→            </div>
+   959→
+   960→            <div className="space-y-2">
+   961→              <label className="text-sm font-medium text-navy">Status do Registro</label>
+   962→              <Select 
+   963→                value={formNo.statusRegistro || "pendente"} 
+   964→                onValueChange={(v) => setFormNo({...formNo, statusRegistro: v as NoArvore["statusRegistro"]})}
+   965→              >
+   966→                <SelectTrigger>
+   967→                  <SelectValue />
+   968→                </SelectTrigger>
+   969→                <SelectContent>
+   970→                  <SelectItem value="localizado">✓ Localizado</SelectItem>
+   971→                  <SelectItem value="pendente">⏳ Pendente</SelectItem>
+   972→                  <SelectItem value="em_busca">🔍 Em Busca na Europa</SelectItem>
+   973→                  <SelectItem value="nao_existe">✗ Não Existe</SelectItem>
+   974→                </SelectContent>
+   975→              </Select>
+   976→            </div>
+   977→
+   978→            <div className="space-y-2">
+   979→              <label className="text-sm font-medium text-navy">Variações de Grafia do Nome</label>
+   980→              <Input
+   981→                placeholder="Ex: Müller, Mueller, Muller"
+   982→                value={formNo.variacoesGrafia || ""}
+   983→                onChange={(e) => setFormNo({...formNo, variacoesGrafia: e.target.value})}
+   984→              />
+   985→            </div>
+   986→
+   987→            <div className="space-y-2">
+   988→              <label className="text-sm font-medium text-navy">Anotações de Cartório</label>
+   989→              <textarea
+   990→                placeholder="Observações sobre registros, livros, paróquias..."
+   991→                value={formNo.anotacoesCartorio || ""}
+   992→                onChange={(e) => setFormNo({...formNo, anotacoesCartorio: e.target.value})}
+   993→                rows={3}
+   994→                className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+   995→              />
+   996→            </div>
+   997→
+   998→            <div className="flex justify-end gap-2 pt-2">
+   999→              <Button variant="outline" onClick={() => setDialogNoAberto(false)}>
+  1000→                Cancelar
+  1001→              </Button>
+  1002→              <Button onClick={salvarNo} className="bg-navy hover:bg-navy-light text-white">
+  1003→                <Check className="size-4 mr-2" />
+  1004→                Salvar Alterações
+  1005→              </Button>
+  1006→            </div>
+  1007→          </div>
+  1008→        </DialogContent>
+  1009→      </Dialog>
+  1010→    </div>
+  1011→  );
+  1012→}
+  1013→

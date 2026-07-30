@@ -67,6 +67,21 @@ import {
   generateId,
 } from "@/lib/crm-store";
 
+// Formata data brasileira: 10042004 → 10/04/2004
+function formatarData(valor: string): string {
+  // Remove tudo que não é dígito
+  const digitos = valor.replace(/\D/g, "");
+  
+  // Limita a 8 dígitos (DDMMYYYY)
+  const limitados = digitos.slice(0, 8);
+  
+  // Aplica a máscara progressiva
+  if (limitados.length === 0) return "";
+  if (limitados.length <= 2) return limitados;
+  if (limitados.length <= 4) return `${limitados.slice(0, 2)}/${limitados.slice(2)}`;
+  return `${limitados.slice(0, 2)}/${limitados.slice(2, 4)}/${limitados.slice(4)}`;
+}
+
 // Tree node component for visualization
 function TreeNode({ 
   no, 
@@ -915,8 +930,9 @@ export default function FichaCliente() {
                   value={formNo.nascimento?.data || ""}
                   onChange={(e) => setFormNo({
                     ...formNo, 
-                    nascimento: {...(formNo.nascimento || {}), data: e.target.value}
+                    nascimento: {...(formNo.nascimento || {}), data: formatarData(e.target.value)}
                   })}
+                  maxLength={10}
                 />
               </div>
               <div className="space-y-2">
@@ -940,8 +956,9 @@ export default function FichaCliente() {
                   value={formNo.casamento?.data || ""}
                   onChange={(e) => setFormNo({
                     ...formNo, 
-                    casamento: {...(formNo.casamento || {}), data: e.target.value}
+                    casamento: {...(formNo.casamento || {}), data: formatarData(e.target.value)}
                   })}
+                  maxLength={10}
                 />
               </div>
               <div className="space-y-2">
@@ -951,8 +968,9 @@ export default function FichaCliente() {
                   value={formNo.obito?.data || ""}
                   onChange={(e) => setFormNo({
                     ...formNo, 
-                    obito: {...(formNo.obito || {}), data: e.target.value}
+                    obito: {...(formNo.obito || {}), data: formatarData(e.target.value)}
                   })}
+                  maxLength={10}
                 />
               </div>
             </div>
