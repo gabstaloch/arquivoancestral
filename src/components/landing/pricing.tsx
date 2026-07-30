@@ -87,7 +87,7 @@ export function Pricing() {
               ))}
             </ul>
 
-            <div className="mt-7 pt-2">
+            <div className="mt-auto pt-7">
               <Button
                 asChild
                 variant="outline"
@@ -145,7 +145,7 @@ export function Pricing() {
               ))}
             </ul>
 
-            <div className="mt-7 pt-2">
+            <div className="mt-auto pt-7">
               <Button
                 asChild
                 className="w-full bg-gold text-navy hover:bg-gold-dark"
