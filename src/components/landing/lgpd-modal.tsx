@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from 'react';
-import { X, ShieldCheck, Lock, Eye, Users, Database, Mail, Phone, CheckCircle2 } from 'lucide-react';
+import { X, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 interface LGPDModalProps {
   isOpen: boolean;
@@ -68,92 +67,48 @@ export function LGPDModal({ isOpen, onClose }: LGPDModalProps) {
           </div>
 
           {/* Seção 1 - Coleta de Dados */}
-          <div className="flex gap-4">
-            <div className="size-10 rounded-lg bg-green-50 flex items-center justify-center shrink-0 mt-0.5">
-              <Database className="size-5 text-green-600" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-navy text-base mb-2">1. Coleta de Dados</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                Coletamos apenas as informações necessárias para a prestação dos nossos serviços de pesquisa genealógica 
-                (como seu nome, e-mail, telefone/WhatsApp e os dados da sua linhagem familiar fornecidos no formulário).
-              </p>
-            </div>
+          <div className="pl-4 border-l-2 border-green-200">
+            <h3 className="font-semibold text-navy text-base mb-2">1. Coleta de Dados</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              Coletamos apenas as informações necessárias para a prestação dos nossos serviços de pesquisa genealógica 
+              (como seu nome, e-mail, telefone/WhatsApp e os dados da sua linhagem familiar fornecidos no formulário).
+            </p>
           </div>
 
           {/* Seção 2 - Uso das Informações */}
-          <div className="flex gap-4">
-            <div className="size-10 rounded-lg bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
-              <Eye className="size-5 text-blue-600" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-navy text-base mb-2">2. Uso das Informações</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                Seus dados são utilizados exclusivamente para efetuar as buscas de certidões nos acervos e cartórios 
-                (nacionais e internacionais), bem como para manter a comunicação direta sobre o andamento do seu pedido.
-              </p>
-            </div>
+          <div className="pl-4 border-l-2 border-blue-200">
+            <h3 className="font-semibold text-navy text-base mb-2">2. Uso das Informações</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              Seus dados são utilizados exclusivamente para efetuar as buscas de certidões nos acervos e cartórios 
+              (nacionais e internacionais), bem como para manter a comunicação direta sobre o andamento do seu pedido.
+            </p>
           </div>
 
           {/* Seção 3 - Compartilhamento Restrito */}
-          <div className="flex gap-4">
-            <div className="size-10 rounded-lg bg-purple-50 flex items-center justify-center shrink-0 mt-0.5">
-              <Lock className="size-5 text-purple-600" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-navy text-base mb-2">3. Compartilhamento Restrito</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                Não vendemos nem compartilhamos seus dados pessoais com terceiros para fins comerciais. 
-                Os dados da árvore genealógica são informados apenas aos órgãos, arquivos históricos, paróquias e cartórios 
-                estritamente necessários para a localização e emissão dos documentos.
-              </p>
-            </div>
+          <div className="pl-4 border-l-2 border-purple-200">
+            <h3 className="font-semibold text-navy text-base mb-2">3. Compartilhamento Restrito</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              Não vendemos nem compartilhamos seus dados pessoais com terceiros para fins comerciais. 
+              Os dados da árvore genealógica são informados apenas aos órgãos, arquivos históricos, paróquias e cartórios 
+              estritamente necessários para a localização e emissão dos documentos.
+            </p>
           </div>
 
           {/* Seção 4 - Armazenamento e Segurança */}
-          <div className="flex gap-4">
-            <div className="size-10 rounded-lg bg-orange-50 flex items-center justify-center shrink-0 mt-0.5">
-              <ShieldCheck className="size-5 text-orange-600" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-navy text-base mb-2">4. Armazenamento e Segurança</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                Seus dados são mantidos em ambiente seguro e restrito apenas aos pesquisadores responsáveis pela investigação do seu caso.
-              </p>
-            </div>
+          <div className="pl-4 border-l-2 border-orange-200">
+            <h3 className="font-semibold text-navy text-base mb-2">4. Armazenamento e Segurança</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              Seus dados são mantidos em ambiente seguro e restrito apenas aos pesquisadores responsáveis pela investigação do seu caso.
+            </p>
           </div>
 
           {/* Seção 5 - Seus Direitos */}
-          <div className="flex gap-4">
-            <div className="size-10 rounded-lg bg-pink-50 flex items-center justify-center shrink-0 mt-0.5">
-              <Users className="size-5 text-pink-600" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-navy text-base mb-2">5. Seus Direitos</h3>
-              <p className="text-sm text-gray-600 leading-relaxed mb-3">
-                Você pode, a qualquer momento, solicitar a confirmação, atualização ou exclusão definitiva dos seus dados pessoais 
-                do nosso banco de dados entrando em contato direto:
-              </p>
-              
-              <div className="flex flex-wrap gap-3 mt-3">
-                <a 
-                  href={`https://wa.me/${SITE_WHATSAPP?.replace(/\D/g, '') || '5547999999999'}`}
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-xs font-medium rounded-lg transition-colors"
-                >
-                  <Phone className="size-3.5" />
-                  WhatsApp
-                </a>
-                <a 
-                  href={`mailto:${SITE_EMAIL || 'contato@arquivoancestral.com'}`}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-navy hover:bg-navy-light text-white text-xs font-medium rounded-lg transition-colors"
-                >
-                  <Mail className="size-3.5" />
-                  E-mail
-                </a>
-              </div>
-            </div>
+          <div className="pl-4 border-l-2 border-pink-200">
+            <h3 className="font-semibold text-navy text-base mb-2">5. Seus Direitos</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              Você pode, a qualquer momento, solicitar a confirmação, atualização ou exclusão definitiva dos seus dados pessoais 
+              do nosso banco de dados entrando em contato direto via WhatsApp ou e-mail.
+            </p>
           </div>
 
         </div>
@@ -180,7 +135,3 @@ export function LGPDModal({ isOpen, onClose }: LGPDModalProps) {
     </div>
   );
 }
-
-// Constantes para contato (serão substituídas pelo site config)
-const SITE_WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP || '';
-const SITE_EMAIL = process.env.NEXT_PUBLIC_EMAIL || 'contato@arquivoancestral.com';
