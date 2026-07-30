@@ -1,25 +1,36 @@
 "use client";
 
-import { useState, useRef, useEffect } from 'react';
-import { Clipboard, Image as ImageIcon, Loader2, CheckCircle2, X } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { Clipboard, Image as ImageIcon, Loader2, CheckCircle2, X, MousePointerClick } from 'lucide-react';
 import { processarImagemRegistro, getImageFromClipboard, DadosExtraidosOCR } from '@/lib/ocr-utils';
 
 interface ImagePasteZoneProps {
   onDadosExtraidos: (dados: DadosExtraidosOCR) => void;
   label?: string;
+  isActive?: boolean;  // Controlado pelo pai - qual zona está ativa
+  onActivate?: () => void;  // Callback quando esta zona é ativada
+  tipoRegistro?: string;  // Para identificação visual (nascimento, casamento, obito)
 }
 
-export default function ImagePasteZone({ onDadosExtraidos, label = "Colar Imagem do Registro" }: ImagePasteZoneProps) {
+export default function ImagePasteZone({ 
+  onDadosExtraidos, 
+  label = "Colar Imagem do Registro",
+  isActive = false,
+  onActivate,
+  tipoRegistro
+}: ImagePasteZoneProps) {
   const [processando, setProcessando] = useState(false);
   const [imagemPreview, setImagemPreview] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [sucesso, setSucesso] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Listener para Ctrl+V
+  // Listener para Ctrl+V - SÓ funciona se esta zona está ATIVA
   useEffect(() => {
     const handlePaste = async (e: ClipboardEvent) => {
-      // Verificar se o foco está dentro do container ou se é uma imagem
+      // SÓ processar se esta zona está ativa E há imagem no clipboard
+      if (!isActive) return;
+      
       const items = e.clipboardData?.items;
       if (!items) return;
 
@@ -43,10 +54,10 @@ export default function ImagePasteZone({ onDadosExtraidos, label = "Colar Imagem
     return () => {
       document.removeEventListener('paste', handlePaste);
     };
-  }, []);
+  }, [isActive]);  // Re-cria listener quando isActive muda
 
   // Processar imagem colada
-  const processarImagemColada = async (clipboardData: DataTransfer) => {
+  const processarImagemColada = useCallback(async (clipboardData: DataTransfer) => {
     setProcessando(true);
     setErro(null);
     setSucesso(false);
@@ -77,45 +88,50 @@ export default function ImagePasteZone({ onDadosExtraidos, label = "Colar Imagem
       // Processar com OCR
       const dadosExtraidos = await processarImagemRegistro(arquivoImagem);
 
-      console.log('Dados extraídos:', dadosExtraidos);
+      console.log(`Dados extraídos (${tipoRegistro || 'registro'}):`, dadosExtraidos);
 
       // Chamar callback com os dados
       onDadosExtraidos(dadosExtraidos);
 
       setSucesso(true);
       
-      // Limpar mensagem de sucesso após 3 segundos
-      setTimeout(() => setSucesso(false), 3000);
+      // Limpar mensagem de sucesso após 5 segundos
+      setTimeout(() => setSucesso(false), 5000);
 
     } catch (error) {
       console.error('Erro ao processar imagem:', error);
-      setErro(error instanceof Error ? error.message : 'Erro ao processar imagem');
+      setErro(error instanceof Error ? error.message : 'Falha ao processar imagem. Tente novamente.');
+      // Limpar erro após 5 segundos
+      setTimeout(() => setErro(null), 5000);
     } finally {
       setProcessando(false);
     }
-  };
+  }, [onDadosExtraidos, tipoRegistro]);
 
-  // Também permitir clique para colar (alternativa)
+  // Clique para ativar esta zona e/ou colar
   const handleClick = async () => {
-    try {
-      const arquivo = await getImageFromClipboard();
-      if (arquivo) {
-        const dt = new DataTransfer();
-        dt.items.add(arquivo);
-        
-        const fakeEvent = {
-          clipboardData: dt,
-          preventDefault: () => {},
-        } as ClipboardEvent;
-        
-        await processarImagemColada(fakeEvent.clipboardData!);
-      } else {
-        setErro('Nenhuma imagem encontrada. Use Ctrl+V para colar.');
+    // Ativar esta zona
+    if (onActivate) {
+      onActivate();
+    }
+    
+    // Se já está ativa, tentar pegar imagem do clipboard
+    if (isActive) {
+      try {
+        const arquivo = await getImageFromClipboard();
+        if (arquivo) {
+          const dt = new DataTransfer();
+          dt.items.add(arquivo);
+          
+          await processarImagemColada(dt);
+        } else {
+          // Apenas mostrar dica - não é erro ainda
+          console.log('Nenhuma imagem no clipboard. Aguardando Ctrl+V...');
+        }
+      } catch (error) {
+        setErro('Não foi possível acessar a área de transferência.');
         setTimeout(() => setErro(null), 3000);
       }
-    } catch (error) {
-      setErro('Não foi possível acessar a área de transferência.');
-      setTimeout(() => setErro(null), 3000);
     }
   };
 
@@ -126,43 +142,118 @@ export default function ImagePasteZone({ onDadosExtraidos, label = "Colar Imagem
     setErro(null);
   };
 
+  // Cores baseadas no tipo de registro
+  const getColors = () => {
+    switch(tipoRegistro) {
+      case 'nascimento':
+        return {
+          active: 'border-green-400 bg-green-50 ring-2 ring-green-200',
+          hover: 'hover:border-green-300 hover:bg-green-50/50',
+          processing: 'border-green-400 bg-green-50',
+          success: 'border-green-400 bg-green-50',
+          error: 'border-red-300 bg-red-50',
+          idle: 'border-gray-300 bg-gray-50',
+          iconBg: 'bg-green-100',
+          iconColor: 'text-green-600',
+          textColor: 'text-green-700',
+          badgeBg: 'bg-green-100',
+          badgeText: 'text-green-700'
+        };
+      case 'casamento':
+        return {
+          active: 'border-pink-400 bg-pink-50 ring-2 ring-pink-200',
+          hover: 'hover:border-pink-300 hover:bg-pink-50/50',
+          processing: 'border-pink-400 bg-pink-50',
+          success: 'border-pink-400 bg-pink-50',
+          error: 'border-red-300 bg-red-50',
+          idle: 'border-gray-300 bg-gray-50',
+          iconBg: 'bg-pink-100',
+          iconColor: 'text-pink-600',
+          textColor: 'text-pink-700',
+          badgeBg: 'bg-pink-100',
+          badgeText: 'text-pink-700'
+        };
+      case 'obito':
+        return {
+          active: 'border-gray-500 bg-gray-100 ring-2 ring-gray-300',
+          hover: 'hover:border-gray-400 hover:bg-gray-50/50',
+          processing: 'border-gray-500 bg-gray-100',
+          success: 'border-gray-500 bg-gray-100',
+          error: 'border-red-300 bg-red-50',
+          idle: 'border-gray-300 bg-gray-50',
+          iconBg: 'bg-gray-200',
+          iconColor: 'text-gray-600',
+          textColor: 'text-gray-700',
+          badgeBg: 'bg-gray-200',
+          badgeText: 'text-gray-700'
+        };
+      default:
+        return {
+          active: 'border-navy/60 bg-navy/5 ring-2 ring-navy/20',
+          hover: 'hover:border-navy/40 hover:bg-navy/5',
+          processing: 'border-blue-300 bg-blue-50',
+          success: 'border-green-300 bg-green-50',
+          error: 'border-red-300 bg-red-50',
+          idle: 'border-gray-300 bg-gray-50',
+          iconBg: 'bg-navy/10',
+          iconColor: 'text-navy/60',
+          textColor: 'text-navy/70',
+          badgeBg: 'bg-navy/10',
+          badgeText: 'text-navy/70'
+        };
+    }
+  };
+
+  const colors = getColors();
+
   return (
     <div 
       ref={containerRef}
       className={`
         relative border-2 border-dashed rounded-lg p-3 transition-all cursor-pointer
-        ${processando ? 'border-blue-300 bg-blue-50' :
-          sucesso ? 'border-green-300 bg-green-50' :
-          erro ? 'border-red-300 bg-red-50' :
-          'border-gray-300 bg-gray-50 hover:border-navy/40 hover:bg-navy/5'}
+        ${processando ? colors.processing :
+          sucesso ? colors.success :
+          erro ? colors.error :
+          isActive ? colors.active :
+          `${colors.idle} ${colors.hover}`}
       `}
       onClick={handleClick}
     >
+      {/* Indicador de Zona Ativa */}
+      {isActive && !processando && !imagemPreview && (
+        <div className="absolute -top-2.5 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-white shadow-sm border z-10">
+          <MousePointerClick className="size-3 text-navy" />
+          <span className={colors.badgeText}>Ativo - Pressione Ctrl+V</span>
+        </div>
+      )}
+
       {/* Conteúdo padrão */}
       {!imagemPreview && !processando && (
         <div className="flex flex-col items-center gap-2 py-3">
           <div className={`
-            size-10 rounded-full flex items-center justify-center
-            ${sucesso ? 'bg-green-100' : erro ? 'bg-red-100' : 'bg-navy/10'}
+            size-10 rounded-full flex items-center justify-center transition-colors
+            ${sucesso ? 'bg-green-100' : erro ? 'bg-red-100' : colors.iconBg}
           `}>
             {sucesso ? (
               <CheckCircle2 className="size-5 text-green-600" />
             ) : erro ? (
               <X className="size-5 text-red-500" />
             ) : (
-              <Clipboard className="size-5 text-navy/60" />
+              <Clipboard className={`size-5 ${isActive ? colors.iconColor : 'text-navy/60'}`} />
             )}
           </div>
           
           <div className="text-center">
             <p className={`text-sm font-medium ${
-              sucesso ? 'text-green-700' : erro ? 'text-red-600' : 'text-navy/70'
+              sucesso ? 'text-green-700' : 
+              erro ? 'text-red-600' : 
+              isActive ? colors.textColor : 'text-navy/70'
             }`}>
               {sucesso ? 'Dados Extraídos com Sucesso!' : 
-               erro || label}
+               erro || (isActive ? 'Pronto para colar (Ctrl+V)' : label)}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Pressione Ctrl+V ou clique aqui
+              {isActive ? 'Cole a imagem agora...' : 'Clique para ativar, depois Ctrl+V'}
             </p>
           </div>
           
@@ -170,15 +261,26 @@ export default function ImagePasteZone({ onDadosExtraidos, label = "Colar Imagem
             <ImageIcon className="size-3" />
             <span>Extrai: Cartório, Livro, Folha, Termo</span>
           </div>
+
+          {/* Indicador visual de tipo */}
+          {tipoRegistro && isActive && (
+            <div className={`text-[9px] px-2 py-0.5 rounded ${colors.badgeBg} ${colors.badgeText} uppercase tracking-wider`}>
+              Registro: {tipoRegistro === 'nascimento' ? 'Nascimento' : 
+                       tipoRegistro === 'casamento' ? 'Casamento' : 'Óbito'}
+            </div>
+          )}
         </div>
       )}
 
       {/* Estado de processamento */}
       {processando && (
         <div className="flex flex-col items-center gap-2 py-4">
-          <Loader2 className="size-8 text-blue-600 animate-spin" />
-          <p className="text-sm font-medium text-blue-700">Processando imagem...</p>
+          <Loader2 className={`size-8 ${colors.iconColor} animate-spin`} />
+          <p className={`text-sm font-medium ${colors.textColor}`}>Processando imagem...</p>
           <p className="text-xs text-muted-foreground">Extraindo dados com OCR</p>
+          <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
+            <div className={`${colors.iconColor.replace('text-', 'bg-')} h-1.5 rounded-full animate-pulse`} style={{width: '60%'}} />
+          </div>
         </div>
       )}
 

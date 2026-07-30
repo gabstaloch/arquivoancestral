@@ -583,6 +583,9 @@ export default function FichaCliente() {
   const [dialogNovoNoAberto, setDialogNovoNoAberto] = useState(false);
   const [dialogDespesaAberto, setDialogDespesaAberto] = useState(false);
   
+  // Controla qual zona de colar imagem está ativa (só uma por vez)
+  const [zonaColarAtiva, setZonaColarAtiva] = useState<string | null>(null);
+  
   // Form states
   const [novoNoRelacao, setNovoNoRelacao] = useState("pai");
   const [formNo, setFormNo] = useState<Partial<NoArvore>>({});
@@ -634,6 +637,7 @@ export default function FichaCliente() {
   function abrirEditarNo(no: NoArvore) {
     setFormNo({ ...no });
     setNoSelecionado(no);
+    setZonaColarAtiva(null);  // Resetar zona ativa ao abrir
     setDialogNoAberto(true);
   }
 
@@ -1387,6 +1391,9 @@ export default function FichaCliente() {
                       {/* Image Paste Zone - OCR */}
                       <ImagePasteZone 
                         label="Cole aqui a imagem do registro (Ctrl+V)"
+                        tipoRegistro="nascimento"
+                        isActive={zonaColarAtiva === 'nascimento'}
+                        onActivate={() => setZonaColarAtiva('nascimento')}
                         onDadosExtraidos={(dados) => {
                           console.log('Dados extraídos Nascimento:', dados);
                           
@@ -1561,6 +1568,9 @@ export default function FichaCliente() {
                       {/* Image Paste Zone - OCR */}
                       <ImagePasteZone 
                         label="Cole aqui a imagem do registro (Ctrl+V)"
+                        tipoRegistro="casamento"
+                        isActive={zonaColarAtiva === 'casamento'}
+                        onActivate={() => setZonaColarAtiva('casamento')}
                         onDadosExtraidos={(dados) => {
                           console.log('Dados extraídos Casamento:', dados);
                           
@@ -1753,6 +1763,9 @@ export default function FichaCliente() {
                       {/* Image Paste Zone - OCR */}
                       <ImagePasteZone 
                         label="Cole aqui a imagem do registro (Ctrl+V)"
+                        tipoRegistro="obito"
+                        isActive={zonaColarAtiva === 'obito'}
+                        onActivate={() => setZonaColarAtiva('obito')}
                         onDadosExtraidos={(dados) => {
                           console.log('Dados extraídos Óbito:', dados);
                           
@@ -1909,7 +1922,10 @@ export default function FichaCliente() {
 
             {/* Action Buttons */}
             <div className="flex justify-end gap-2 pt-4 border-t">
-              <Button variant="outline" onClick={() => setDialogNoAberto(false)}>
+              <Button variant="outline" onClick={() => {
+                setDialogNoAberto(false);
+                setZonaColarAtiva(null);  // Limpar zona ativa ao fechar
+              }}>
                 Cancelar
               </Button>
               <Button onClick={salvarNo} className="bg-navy hover:bg-navy-light text-white">
