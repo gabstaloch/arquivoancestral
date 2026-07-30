@@ -8,7 +8,7 @@ export const SITE = {
   WHATSAPP_NUMBER: "5547996347286",
   WHATSAPP_MESSAGE:
     "Olá! Gostaria de ajuda para pesquisar os documentos do meu ancestral europeu.",
-  email: "contato@arquivoancestral.com.br",
+  email: "arquivoancestralue@gmail.com",
   cities: ["Alemanha", "Itália", "Polônia", "Ucrânia", "Áustria", "Tchéquia"],
 } as const;
 
