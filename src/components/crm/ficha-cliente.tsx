@@ -82,15 +82,15 @@ function formatarData(valor: string): string {
   return `${limitados.slice(0, 2)}/${limitados.slice(2, 4)}/${limitados.slice(4)}`;
 }
 
-// Tree node component for visualization
-function TreeNode({ 
+// Person card for family tree (FamilySearch style)
+function PersonCard({ 
   no, 
-  onEdit, 
-  depth = 0 
+  onEdit,
+  compact = false 
 }: { 
   no: NoArvore; 
   onEdit: (no: NoArvore) => void;
-  depth?: number;
+  compact?: boolean;
 }) {
   const relacaoLabels: Record<string, string> = {
     requerente: "Requerente",
@@ -103,79 +103,240 @@ function TreeNode({
     ancestral: "Ancestral Europeu",
   };
 
-  return (
-    <div 
-      className="group relative"
-      style={{ marginLeft: depth > 0 ? `${depth * 24}px` : 0 }}
-    >
-      <Card className={`transition-all hover:shadow-md cursor-pointer ${
-        no.relacao === 'ancestral' ? 'border-gold/40 bg-gold/5' : 'border-navy/10'
-      }`}>
-        <CardContent className="p-3 sm:p-4" onClick={() => onEdit(no)}>
-          <div className="flex items-start gap-3">
-            {/* Icon */}
-            <div className={`size-10 rounded-lg flex items-center justify-center shrink-0 ${
-              no.relacao === 'ancestral' ? 'bg-gold/20' : 'bg-navy/10'
-            }`}>
-              {no.relacao === 'requerente' || no.relacao === 'ancestral' ? (
-                <User className={`size-5 ${no.relacao === 'ancestral' ? 'text-gold-dark' : 'text-navy'}`} />
-              ) : (
-                <Users className="size-5 text-navy/70" />
-              )}
-            </div>
+  // Get years of life
+  const anoNasc = no.nascimento?.data?.split('/')?.[2] || '';
+  const anoObito = no.obito?.data?.split('/')?.[2] || '';
+  const anosVida = anoNasc ? (anoObito ? `${anoNasc}-${anoObito}` : `${anoNasc}-`) : '';
 
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h4 className="font-medium text-navy truncate">{no.nomeCompleto}</h4>
-                <Badge variant="outline" className="text-[10px]">
-                  {relacaoLabels[no.relacao] || no.relacao}
-                </Badge>
-                <Badge className={`${getStatusRegistroColor(no.statusRegistro)} text-[10px]`}>
-                  {getStatusRegistroLabel(no.statusRegistro)}
-                </Badge>
+  return (
+    <Card 
+      className={`
+        cursor-pointer transition-all hover:shadow-lg hover:border-navy/40
+        border border-navy/20 bg-white
+        ${compact ? 'w-[140px]' : 'w-[160px]'}
+      `}
+      onClick={() => onEdit(no)}
+    >
+      <CardContent className={`p-3 ${compact ? 'p-2.5' : ''} text-center`}>
+        {/* Avatar placeholder */}
+        <div className={`
+          mx-auto rounded-full bg-navy/5 flex items-center justify-center
+          ${compact ? 'size-9' : 'size-11'}
+        `}>
+          <User className={`${compact ? 'size-4' : 'size-5'} text-navy/60`} />
+        </div>
+        
+        {/* Name */}
+        <h4 className={`font-medium text-navy mt-2 truncate ${compact ? 'text-xs' : 'text-sm'}`}>
+          {no.nomeCompleto || 'Adicionar'}
+        </h4>
+        
+        {/* Years */}
+        {anosVida && (
+          <p className={`text-muted-foreground ${compact ? 'text-[10px]' : 'text-xs'}`}>
+            {anosVida}
+          </p>
+        )}
+
+        {/* Status badge */}
+        <Badge 
+          variant="outline" 
+          className={`
+            mt-1.5 text-[9px] border-current
+            ${no.statusRegistro === 'localizado' ? 'text-green-700 border-green-300 bg-green-50' :
+              no.statusRegistro === 'pendente' ? 'text-yellow-700 border-yellow-300 bg-yellow-50' :
+              no.statusRegistro === 'em_busca' ? 'text-blue-700 border-blue-300 bg-blue-50' :
+              'text-gray-500 border-gray-300 bg-gray-50'}
+          `}
+        >
+          {getStatusRegistroLabel(no.statusRegistro)}
+        </Badge>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Couple row (husband and wife side by side)
+function CoupleRow({ 
+  homem, 
+  mulher, 
+  onEdit,
+  showConnector = true
+}: { 
+  homem?: NoArvore; 
+  mulher?: NoArvore; 
+  onEdit: (no: NoArvore) => void;
+  showConnector?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-center gap-2">
+      {homem ? (
+        <PersonCard no={homem} onEdit={onEdit} />
+      ) : (
+        <EmptySlot label="Adicionar Pai/Marido" compact />
+      )}
+      
+      {showConnector && (homem || mulher) && (
+        <div className="w-6 h-px bg-navy/30" />
+      )}
+      
+      {mulher ? (
+        <PersonCard no={mulher} onEdit={onEdit} compact />
+      ) : (
+        <EmptySlot label="Adicionar Mãe/Esposa" compact />
+      )}
+    </div>
+  );
+}
+
+// Empty slot for adding missing family members
+function EmptySlot({ label, compact }: { label: string; compact?: boolean }) {
+  return null; // Hidden by default - can be shown if needed for add functionality
+}
+
+// Vertical connector line
+function ConnectorLine({ height = "h-8" }: { height?: string }) {
+  return <div className={`w-px ${height} bg-navy/25 mx-auto`} />;
+}
+
+// Horizontal connector with branches (┬─ ─┴─ ┬)
+function BranchConnector() {
+  return (
+    <div className="flex items-center justify-center w-full max-w-md mx-auto">
+      <div className="flex-1 h-px bg-navy/25" />
+      <div className="w-px h-3 bg-navy/25" />
+      <div className="w-24 h-px bg-navy/25" />
+      <div className="w-px h-3 bg-navy/25" />
+      <div className="flex-1 h-px bg-navy/25" />
+    </div>
+  );
+}
+
+// Main Family Tree Component (FamilySearch style - Bottom to Top)
+function FamilyTree({ 
+  nos, 
+  onEdit, 
+  onAdd 
+}: { 
+  nos: NoArvore[]; 
+  onEdit: (no: NoArvore) => void;
+  onAdd: (relacao: string) => void;
+}) {
+  // Organize nodes by relationship
+  const requerente = nos.find(n => n.relacao === 'requerente');
+  const pai = nos.find(n => n.relacao === 'pai');
+  const mae = nos.find(n => n.relacao === 'mae');
+  const avoPaterno = nos.find(n => n.relacao === 'avo_paterno');
+  const avoPaterna = nos.find(n => n.relacao === 'avo_paterna');
+  const avoMaterno = nos.find(n => n.relacao === 'avo_materno');
+  const avoMaterna = nos.find(n => n.relacao === 'avo_materna');
+  const ancestrais = nos.filter(n => n.relacao === 'ancestral');
+
+  return (
+    <div className="py-8 overflow-x-auto">
+      <div className="min-w-[400px] flex flex-col-reverse items-center">
+        
+        {/* GENERATION 0: Requerente (BOTTOM) */}
+        <div className="relative">
+          {requerente ? (
+            <PersonCard no={requerente} onEdit={onEdit} />
+          ) : (
+            <Card className="cursor-pointer border-dashed border-2 border-navy/30 bg-navy/5 w-[160px]" onClick={() => onAdd('requerente')}>
+              <CardContent className="p-4 text-center">
+                <User className="size-6 mx-auto text-navy/40" />
+                <p className="text-sm font-medium text-navy/60 mt-2">Requerente</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        {/* Connector to parents */}
+        {(pai || mae) && (
+          <>
+            <ConnectorLine height="h-6" />
+            <BranchConnector />
+            <ConnectorLine height="h-6" />
+          </>
+        )}
+
+        {/* GENERATION 1: Parents */}
+        {(pai || mae) && (
+          <CoupleRow homem={pai} mulher={mae} onEdit={onEdit} />
+        )}
+
+        {/* Connectors to grandparents */}
+        {(avoPaterno || avoPaterna || avoMaterno || avoMaterna) && (
+          <>
+            <ConnectorLine height="h-6" />
+            
+            {/* Double branch for both sides */}
+            <div className="flex items-center justify-center w-full max-w-lg mx-auto">
+              {/* Left branch (paternal) */}
+              <div className="flex-1 flex items-center">
+                <div className="flex-1 h-px bg-navy/25" />
+                <div className="w-px h-3 bg-navy/25" />
+                <div className="w-16 h-px bg-navy/25" />
               </div>
               
-              {(no.nascimento || no.casamento || no.obito) && (
-                <div className="flex flex-wrap gap-2 mt-1.5 text-[11px] text-muted-foreground">
-                  {no.nascimento && (
-                    <span className="flex items-center gap-1">
-                      <CalendarDays className="size-3" />
-                      Nasc: {no.nascimento.data}{no.nascimento.local ? ` - ${no.nascimento.local}` : ''}
-                    </span>
-                  )}
-                  {no.casamento && (
-                    <span className="flex items-center gap-1">
-                      <FileText className="size-3" />
-                      Casam: {no.casamento.data}
-                    </span>
-                  )}
-                  {no.obito && (
-                    <span className="flex items-center gap-1">
-                      <AlertCircle className="size-3" />
-                      Óbito: {no.obito.data}
-                    </span>
-                  )}
+              {/* Center gap */}
+              <div className="w-12" />
+              
+              {/* Right branch (maternal) */}
+              <div className="flex-1 flex items-center">
+                <div className="w-16 h-px bg-navy/25" />
+                <div className="w-px h-3 bg-navy/25" />
+                <div className="flex-1 h-px bg-navy/25" />
+              </div>
+            </div>
+            
+            <ConnectorLine height="h-6" />
+          </>
+        )}
+
+        {/* GENERATION 2: Grandparents */}
+        {(avoPaterno || avoPaterna || avoMaterno || avoMaterna) && (
+          <div className="flex items-start justify-center gap-8 w-full max-w-lg">
+            {/* Paternal grandparents */}
+            <div className="flex flex-col items-center">
+              {(avoPaterno || avoPaterna) ? (
+                <CoupleRow homem={avoPaterno} mulher={avoPaterna} onEdit={onEdit} showConnector={false} />
+              ) : (
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">Avós Paternos</p>
                 </div>
               )}
-              
-              {no.variacoesGrafia && (
-                <p className="mt-1 text-[11px] text-muted-foreground italic">
-                  Var.: {no.variacoesGrafia}
-                </p>
+            </div>
+            
+            {/* Maternal grandparents */}
+            <div className="flex flex-col items-center">
+              {(avoMaterno || avoMaterna) ? (
+                <CoupleRow homem={avoMaterno} mulher={avoMaterna} onEdit={onEdit} showConnector={false} />
+              ) : (
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">Avós Maternos</p>
+                </div>
               )}
             </div>
-
-            {/* Edit indicator */}
-            <Edit2 className="size-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
           </div>
-        </CardContent>
-      </Card>
+        )}
 
-      {/* Connector line */}
-      {depth < 3 && (
-        <div className="w-px h-4 bg-navy/20 ml-5" />
-      )}
+        {/* Ancestors section */}
+        {ancestrais.length > 0 && (
+          <>
+            <ConnectorLine height="h-8" />
+            <div className="flex flex-col items-center gap-3 w-full max-w-xl">
+              <p className="text-xs font-semibold uppercase tracking-wider text-navy/60">
+                Ancestrais Europeus
+              </p>
+              <div className="flex flex-wrap justify-center gap-3">
+                {ancestrais.map(ancestral => (
+                  <PersonCard key={ancestral.id} no={ancestral} onEdit={onEdit} compact />
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -538,42 +699,31 @@ export default function FichaCliente() {
             </Dialog>
           </div>
 
-          {/* Tree visualization */}
-          <div className="space-y-3">
+          {/* Tree visualization - FamilySearch style */}
+          <div className="bg-gradient-to-b from-navy/[0.02] to-transparent rounded-xl border border-navy/10 p-4 -m-4 min-h-[500px]">
             {cliente.arvore.length === 0 ? (
-              <Card className="border-dashed border-2">
-                <CardContent className="py-12 text-center">
-                  <TreePine className="size-12 mx-auto text-muted-foreground/30 mb-4" />
-                  <h3 className="font-serif text-lg font-600 text-navy mb-2">
-                    Árvore Vazia
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Adicione membros da família para começar a montar a árvore genealógica.
-                  </p>
-                </CardContent>
-              </Card>
+              <div className="flex flex-col items-center justify-center h-[400px]">
+                <TreePine className="size-16 text-muted-foreground/30 mb-4" />
+                <h3 className="font-serif text-lg font-600 text-navy mb-2">
+                  Árvore Genealógica Vazia
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4 text-center max-w-md">
+                  Adicione o requerente e membros da família para começar a montar a árvore genealógica no estilo FamilySearch.
+                </p>
+                <Button onClick={() => setDialogNovoNoAberto(true)} className="bg-navy hover:bg-navy-light">
+                  <Plus className="size-4 mr-2" />
+                  Adicionar Primeiro Membro
+                </Button>
+              </div>
             ) : (
-              cliente.arvore.map((no) => (
-                <div key={no.id} className="relative group/item">
-                  <TreeNode 
-                    no={no} 
-                    onEdit={abrirEditarNo}
-                    depth={no.relacao === 'requerente' ? 0 : 
-                          ['pai', 'mae'].includes(no.relacao) ? 1 :
-                          no.relacao.includes('avo') ? 2 : 3}
-                  />
-                  
-                  {/* Delete button */}
-                  {no.relacao !== 'requerente' && (
-                    <button
-                      onClick={() => excluirNo(no.id)}
-                      className="absolute right-2 top-2 opacity-0 group-hover/item:opacity-100 transition-opacity p-1.5 rounded-md bg-red-50 text-red-500 hover:bg-red-100"
-                    >
-                      <Trash2 className="size-4" />
-                    </button>
-                  )}
-                </div>
-              ))
+              <FamilyTree 
+                nos={cliente.arvore} 
+                onEdit={abrirEditarNo}
+                onAdd={(relacao) => {
+                  setNovoNoRelacao(relacao);
+                  setDialogNovoNoAberto(true);
+                }}
+              />
             )}
           </div>
         </TabsContent>
