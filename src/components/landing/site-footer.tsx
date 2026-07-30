@@ -148,6 +148,9 @@ export function SiteFooter() {
             <a href="#" className="transition-colors hover:text-white">
               LGPD
             </a>
+            <a href="/login" className="transition-colors hover:text-gold text-white/30">
+              Painel Interno
+            </a>
           </div>
         </div>
 
