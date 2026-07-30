@@ -302,21 +302,7 @@ function EmptyCard({ label }: { label: string }) {
   );
 }
 
-// Curved SVG Lineage Path Component
-function LineagePath({ 
-  fromId, 
-  toIds, 
-  curveIntensity = 40 
-}: { 
-  fromId: string; 
-  toIds: string[];
-  curveIntensity?: number;
-}) {
-  // This will be used to draw curved lines between generations
-  return null; // Lines are drawn in the main FamilyTree component using SVG overlay
-}
-
-// Main Family Tree Component with SVG curved lines
+// Main Family Tree Component - Clean & Centered Layout
 function FamilyTree({ 
   nos, 
   onEdit, 
@@ -341,96 +327,11 @@ function FamilyTree({
   const hasAncestors = ancestrais.length > 0;
 
   return (
-    <div className="py-8 overflow-x-auto relative">
-      <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" style={{ minHeight: '500px' }}>
-        <defs>
-          {/* Gradient for lineage lines */}
-          <linearGradient id="lineageGradient" x1="0%" y1="100%" x2="0%" y2="0%">
-            <stop offset="0%" stopColor="#1A2B4C" stopOpacity="0.15" />
-            <stop offset="50%" stopColor="#1A2B4C" stopOpacity="0.25" />
-            <stop offset="100%" stopColor="#1A2B4C" stopOpacity="0.15" />
-          </linearGradient>
-          {/* Filter for subtle glow effect */}
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-            <feMerge>
-              <feMergeNode in="coloredBlur"/>
-              <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-          </filter>
-        </defs>
-        
-        {/* Curved path from Requerente to Parents */}
-        {hasParents && (
-          <>
-            {/* Main vertical curve up from requerente */}
-            <path
-              d="M 160 140 Q 160 170, 120 190 T 80 220"
-              stroke="url(#lineageGradient)"
-              strokeWidth="2"
-              fill="none"
-              strokeLinecap="round"
-              filter="url(#glow)"
-              className="animate-pulse-slow"
-            />
-            <path
-              d="M 160 140 Q 160 170, 200 190 T 240 220"
-              stroke="url(#lineageGradient)"
-              strokeWidth="2"
-              fill="none"
-              strokeLinecap="round"
-              filter="url(#glow)"
-              className="animate-pulse-slow"
-            />
-          </>
-        )}
-        
-        {/* Curved paths from Parents to Grandparents */}
-        {hasGrandparents && hasParents && (
-          <>
-            {/* Left side - Pai to Avós Paternos */}
-            <path
-              d="M 80 310 Q 80 340, 40 370 T 0 400"
-              stroke="url(#lineageGradient)"
-              strokeWidth="1.5"
-              fill="none"
-              strokeLinecap="round"
-              opacity="0.7"
-            />
-            <path
-              d="M 80 310 Q 80 340, 110 370 T 140 400"
-              stroke="url(#lineageGradient)"
-              strokeWidth="1.5"
-              fill="none"
-              strokeLinecap="round"
-              opacity="0.7"
-            />
-            
-            {/* Right side - Mãe to Avós Maternos */}
-            <path
-              d="M 240 310 Q 240 340, 210 370 T 180 400"
-              stroke="url(#lineageGradient)"
-              strokeWidth="1.5"
-              fill="none"
-              strokeLinecap="round"
-              opacity="0.7"
-            />
-            <path
-              d="M 240 310 Q 240 340, 270 370 T 300 400"
-              stroke="url(#lineageGradient)"
-              strokeWidth="1.5"
-              fill="none"
-              strokeLinecap="round"
-              opacity="0.7"
-            />
-          </>
-        )}
-      </svg>
-
-      <div className="relative z-10 min-w-[450px] flex flex-col-reverse items-center gap-6">
+    <div className="py-10 overflow-x-auto">
+      <div className="flex flex-col-reverse items-center gap-8 min-w-[500px]">
         
         {/* GENERATION 0: Requerente (BOTTOM) */}
-        <div className="relative" id="gen-requerente">
+        <div className="tree-node">
           {requerente ? (
             <PersonCard no={requerente} onEdit={onEdit} />
           ) : (
@@ -445,39 +346,89 @@ function FamilyTree({
               </CardContent>
             </Card>
           )}
+          
+          {/* Vertical line up from requerente */}
+          {hasParents && (
+            <div className="absolute top-full left-1/2 -translate-x-1/2 w-0.5 h-8 bg-gradient-to-t from-navy/20 to-navy/30" />
+          )}
         </div>
+
+        {/* Connector from Requerente to Parents */}
+        {hasParents && (
+          <div className="relative w-full max-w-md flex justify-center">
+            {/* Horizontal bar */}
+            <div className="absolute bottom-0 w-full max-w-[320px] h-0.5 bg-gradient-to-r from-transparent via-navy/25 to-transparent rounded-full" />
+            
+            {/* Vertical drops to parents */}
+            <div className="absolute bottom-0 left-[calc(50%-90px)] w-0.5 h-4 bg-navy/25 translate-y-full" />
+            <div className="absolute bottom-0 right-[calc(50%-90px)] w-0.5 h-4 bg-navy/25 translate-y-full" />
+          </div>
+        )}
 
         {/* GENERATION 1: Parents */}
         {hasParents && (
-          <div className="relative" id="gen-parents">
+          <div className="relative tree-parents">
             <CoupleRow homem={pai} mulher={mae} onEdit={onEdit} />
+            
+            {/* Vertical lines up from parents */}
+            {hasGrandparents && (
+              <>
+                <div className="absolute top-full left-[calc(50%-85px)] w-0.5 h-6 bg-gradient-to-t from-navy/15 to-navy/25" />
+                <div className="absolute top-full right-[calc(50%-85px)] w-0.5 h-6 bg-gradient-to-t from-navy/15 to-navy/25" />
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Connector from Parents to Grandparents */}
+        {hasGrandparents && hasParents && (
+          <div className="relative w-full max-w-lg flex justify-center">
+            {/* Left horizontal (paternal) */}
+            <div className="absolute bottom-0 left-[calc(50%-200px)] w-[160px] h-0.5 bg-gradient-to-r from-transparent via-navy/20 to-transparent rounded-full" />
+            <div className="absolute bottom-0 left-[calc(50%-280px)] w-0.5 h-4 bg-navy/20 translate-y-full" />
+            <div className="absolute bottom-0 left-[calc(50%-120px)] w-0.5 h-4 bg-navy/20 translate-y-full" />
+            
+            {/* Right horizontal (maternal) */}
+            <div className="absolute bottom-0 right-[calc(50%-200px)] w-[160px] h-0.5 bg-gradient-to-l from-transparent via-navy/20 to-transparent rounded-full" />
+            <div className="absolute bottom-0 right-[calc(50%-280px)] w-0.5 h-4 bg-navy/20 translate-y-full" />
+            <div className="absolute bottom-0 right-[calc(50%-120px)] w-0.5 h-4 bg-navy/20 translate-y-full" />
           </div>
         )}
 
         {/* GENERATION 2: Grandparents */}
         {hasGrandparents && (
-          <div className="relative flex items-start justify-center gap-6 w-full max-w-lg" id="gen-grandparents">
+          <div className="flex items-start justify-center gap-12 w-full max-w-xl">
             {/* Paternal grandparents */}
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center relative">
               {(avoPaterno || avoPaterna) ? (
                 <CoupleRow homem={avoPaterno} mulher={avoPaterna} onEdit={onEdit} />
               ) : (
-                <div className="flex gap-1.5">
+                <div className="flex gap-2 opacity-50">
                   <EmptyCard label="Avô Pat." />
                   <EmptyCard label="Avó Pat." />
                 </div>
               )}
+              
+              {/* Line up to ancestors if exists */}
+              {hasAncestors && (
+                <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-0.5 h-6 bg-gradient-to-t from-navy/15 to-navy/20" />
+              )}
             </div>
             
             {/* Maternal grandparents */}
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center relative">
               {(avoMaterno || avoMaterna) ? (
                 <CoupleRow homem={avoMaterno} mulher={avoMaterna} onEdit={onEdit} />
               ) : (
-                <div className="flex gap-1.5">
+                <div className="flex gap-2 opacity-50">
                   <EmptyCard label="Avô Mat." />
                   <EmptyCard label="Avó Mat." />
                 </div>
+              )}
+              
+              {/* Line up to ancestors if exists */}
+              {hasAncestors && (
+                <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-0.5 h-6 bg-gradient-to-t from-navy/15 to-navy/20" />
               )}
             </div>
           </div>
@@ -485,16 +436,23 @@ function FamilyTree({
 
         {/* Ancestors section */}
         {hasAncestors && (
-          <div className="flex flex-col items-center gap-3 w-full max-w-xl" id="gen-ancestors">
-            <p className="text-xs font-semibold uppercase tracking-wider text-navy/50">
-              Ancestrais Europeus
-            </p>
-            <div className="flex flex-wrap justify-center gap-3">
-              {ancestrais.map(ancestral => (
-                <PersonCard key={ancestral.id} no={ancestral} onEdit={onEdit} />
-              ))}
+          <>
+            {/* Horizontal connector for ancestors */}
+            <div className="relative w-full max-w-lg flex justify-center">
+              <div className="absolute bottom-0 w-full max-w-[280px] h-0.5 bg-gradient-to-r from-transparent via-navy/20 to-transparent rounded-full" />
             </div>
-          </div>
+            
+            <div className="flex flex-col items-center gap-3 pt-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-navy/40">
+                Ancestrais Europeus
+              </p>
+              <div className="flex flex-wrap justify-center gap-3">
+                {ancestrais.map(ancestral => (
+                  <PersonCard key={ancestral.id} no={ancestral} onEdit={onEdit} />
+                ))}
+              </div>
+            </div>
+          </>
         )}
       </div>
     </div>

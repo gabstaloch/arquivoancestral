@@ -196,3 +196,11 @@ html {
 .animate-pulse-slow {
   animation: pulse-slow 4s ease-in-out infinite;
 }
+
+/* Family tree node positioning */
+.tree-node {
+  position: relative;
+}
+.tree-parents {
+  position: relative;
+}
