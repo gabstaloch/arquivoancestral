@@ -1,8 +1,6 @@
 // OCR Utilities for Brazilian Civil Registry Documents
 // Extracts: Cartório, Livro, Folha, Termo from pasted images
 
-import Tesseract from 'tesseract.js';
-
 export interface DadosExtraidosOCR {
   tipoRegistro?: 'nascimento' | 'casamento' | 'obito';
   cartorio?: string;
@@ -15,28 +13,77 @@ export interface DadosExtraidosOCR {
   dataRegistro?: string;
   nomeRegistrado?: string;
   rawText?: string;
+  erro?: string;  // Campo para mensagens de erro
 }
 
 /**
  * Processa uma imagem (File ou Blob) usando OCR para extrair dados do registro civil
+ * Com tratamento robusto de erros e timeout
  */
 export async function processarImagemRegistro(file: File | Blob): Promise<DadosExtraidosOCR> {
+  // Timeout de 30 segundos para o OCR
+  const OCR_TIMEOUT = 30000;
+  
   try {
-    const result = await Tesseract.recognize(file, 'por', {
-      logger: (m) => {
+    // Import dinâmico do Tesseract para evitar erros de build
+    const Tesseract = (await import('tesseract.js')).default;
+    
+    // Criar promise com timeout
+    const ocrPromise = Tesseract.recognize(file, 'por', {
+      logger: (m: { status: string; progress?: number }) => {
         if (m.status === 'recognizing text') {
-          console.log(`OCR Progress: ${Math.round(m.progress * 100)}%`);
+          console.log(`OCR Progress: ${Math.round((m.progress || 0) * 100)}%`);
         }
       },
     });
 
+    // Aplicar timeout
+    const result = await Promise.race([
+      ocrPromise,
+      new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout: OCR demorou muito. Verifique sua conexão.')), OCR_TIMEOUT)
+      )
+    ]);
+
     const texto = result.data.text;
     console.log('Texto extraído pelo OCR:', texto);
 
+    if (!texto || texto.trim().length === 0) {
+      return {
+        rawText: '',
+        erro: 'Não foi possível extrair texto da imagem. Tente uma imagem mais nítida.'
+      };
+    }
+
     return parsearTextoRegistro(texto);
-  } catch (error) {
+    
+  } catch (error: unknown) {
     console.error('Erro no OCR:', error);
-    throw new Error('Falha ao processar imagem. Tente novamente.');
+    
+    // Mensagens de erro específicas
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    
+    if (errorMessage.includes('Failed to execute') || errorMessage.includes('importScripts') || errorMessage.includes('worker')) {
+      throw new Error(
+        'Erro ao carregar o motor de OCR. Isso pode acontecer devido a: ' +
+        '\n1. Conexão com internet instável' +
+        '\n2. Firewall bloqueando recursos externos' +
+        '\n\nSolução: Verifique sua conexão e tente novamente.'
+      );
+    }
+    
+    if (errorMessage.includes('Timeout')) {
+      throw new Error(errorMessage);
+    }
+    
+    if (errorMessage.includes('network') || errorMessage.includes('NetworkError') || errorMessage.includes('fetch')) {
+      throw new Error(
+        'Erro de conexão. Não foi possível baixar os arquivos necessários para o OCR. ' +
+        'Verifique sua conexão com a internet.'
+      );
+    }
+    
+    throw new Error(`Falha ao processar imagem: ${errorMessage}`);
   }
 }
 
@@ -105,12 +152,8 @@ function parsearTextoRegistro(texto: string): DadosExtraidosOCR {
       
       // A matrícula geralmente tem o formato:
       // [código] [ano] [tipo] [outros] LIVRO FOLHA TERMO [digito]
-      // Ou simplesmente os últimos 3 grupos numéricos
       
       if (partes.length >= 3) {
-        // Tentar encontrar livro, folha, termo nos últimos grupos
-        // Geralmente são os 3 últimos números significativos antes do dígito verificador
-        
         // Procurar padrão específico: X grupos onde o 6º é livro, 7º é folha, 8º é termo
         if (partes.length >= 8) {
           // Formato completo
