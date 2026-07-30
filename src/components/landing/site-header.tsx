@@ -38,7 +38,7 @@ export function SiteHeader() {
       <div className="mx-auto flex h-24 max-w-7xl items-center justify-between px-4 sm:h-28 sm:px-6 lg:px-8">
         {/* Brand com Logo */}
         <a href="#topo" className="flex items-center gap-3 group">
-          <div className="relative size-[100px] shrink-0 sm:size-[120px] mt-3">
+          <div className="relative size-[100px] shrink-0 sm:size-[120px] mt-5">
             <Image
               src="/logo-arquivo-ancestral.png"
               alt={`${SITE.brand} - Logo`}
