@@ -5,7 +5,7 @@ export const SITE = {
   brand: "Arquivo Ancestral",
   tagline: "Pesquisa & Localização de Certidões Europeias",
   // Brazilian WhatsApp number in international format (country + DDD + number).
-  WHATSAPP_NUMBER: "5511912345678",
+  WHATSAPP_NUMBER: "5547996347286",
   WHATSAPP_MESSAGE:
     "Olá! Gostaria de ajuda para pesquisar os documentos do meu ancestral europeu.",
   email: "contato@arquivoancestral.com.br",
