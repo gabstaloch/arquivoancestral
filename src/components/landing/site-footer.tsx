@@ -59,7 +59,7 @@ export function SiteFooter() {
           {/* Brand com Logo */}
           <div className="lg:col-span-4">
             <div className="flex items-center gap-3">
-              <div className="relative size-[144px] shrink-0 sm:size-[168px]">
+              <div className="relative size-[100px] shrink-0 sm:size-[120px] -my-2">
                 <Image
                   src="/logo-arquivo-ancestral.png"
                   alt={`${SITE.brand} - Logo`}
@@ -67,7 +67,7 @@ export function SiteFooter() {
                   className="object-contain"
                 />
               </div>
-              <span className="flex flex-col leading-none">
+              <span className="flex flex-col leading-tight justify-center">
                 <span className="font-serif text-base font-700 text-white">
                   {SITE.brand}
                 </span>
