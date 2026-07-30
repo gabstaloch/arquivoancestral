@@ -67,6 +67,8 @@ import {
   getStatusRegistroColor,
   generateId,
 } from "@/lib/crm-store";
+import ImagePasteZone from "@/components/crm/image-paste-zone";
+import { DadosExtraidosOCR } from "@/lib/ocr-utils";
 
 // Formata data brasileira: 10042004 → 10/04/2004
 function formatarData(valor: string): string {
@@ -1373,12 +1375,44 @@ export default function FichaCliente() {
                     </div>
                   </div>
 
-                  {/* Civil Registry Fields */}
+                  {/* Civil Registry Fields - with OCR Paste Zone */}
                   {(formNo.nascimento.data) && (
-                    <div className="pt-2 space-y-2 bg-white rounded-md p-3 border border-green-200/50">
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-green-700 flex items-center gap-1">
-                        <FileText className="size-3" /> Dados do Registro Civil
-                      </p>
+                    <div className="pt-2 space-y-3 bg-white rounded-md p-3 border border-green-200/50">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-green-700 flex items-center gap-1">
+                          <FileText className="size-3" /> Dados do Registro Civil
+                        </p>
+                      </div>
+                      
+                      {/* Image Paste Zone - OCR */}
+                      <ImagePasteZone 
+                        label="Cole aqui a imagem do registro (Ctrl+V)"
+                        onDadosExtraidos={(dados) => {
+                          console.log('Dados extraídos Nascimento:', dados);
+                          
+                          // Atualizar formNo com os dados extraídos
+                          const novoRegistroCivil = {
+                            ...(formNo.nascimento.registroCivil || {}),
+                            cartorio: dados.cartorio || formNo.nascimento.registroCivil?.cartorio || '',
+                            livro: dados.livro || formNo.nascimento.registroCivil?.livro || '',
+                            folha: dados.folha || formNo.nascimento.registroCivil?.folha || '',
+                            termo: dados.termo || formNo.nascimento.registroCivil?.termo || '',
+                          };
+                          
+                          // Verificar se está completo
+                          const temTodosCampos = novoRegistroCivil.cartorio || novoRegistroCivil.livro || novoRegistroCivil.folha || novoRegistroCivil.termo;
+                          
+                          setFormNo({
+                            ...formNo,
+                            nascimento: {
+                              ...formNo.nascimento!,
+                              local: dados.municipio ? `${dados.municipio}${dados.uf ? '/' + dados.uf : ''}` : formNo.nascimento.local,
+                              registroCivil: novoRegistroCivil,
+                              completo: !!(formNo.nascimento.data && temTodosCampos)
+                            }
+                          });
+                        }}
+                      />
                       
                       <div className="grid grid-cols-2 gap-2">
                         <div className="space-y-1">
@@ -1515,12 +1549,42 @@ export default function FichaCliente() {
                     </div>
                   </div>
 
-                  {/* Civil Registry Fields for Marriage */}
+                  {/* Civil Registry Fields for Marriage - with OCR */}
                   {formNo.casamento.data && (
-                    <div className="pt-2 space-y-2 bg-white rounded-md p-3 border border-pink-200/50">
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-pink-700 flex items-center gap-1">
-                        <FileText className="size-3" /> Dados do Registro Civil
-                      </p>
+                    <div className="pt-2 space-y-3 bg-white rounded-md p-3 border border-pink-200/50">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-pink-700 flex items-center gap-1">
+                          <FileText className="size-3" /> Dados do Registro Civil
+                        </p>
+                      </div>
+                      
+                      {/* Image Paste Zone - OCR */}
+                      <ImagePasteZone 
+                        label="Cole aqui a imagem do registro (Ctrl+V)"
+                        onDadosExtraidos={(dados) => {
+                          console.log('Dados extraídos Casamento:', dados);
+                          
+                          const novoRegistroCivil = {
+                            ...(formNo.casamento.registroCivil || {}),
+                            cartorio: dados.cartorio || formNo.casamento.registroCivil?.cartorio || '',
+                            livro: dados.livro || formNo.casamento.registroCivil?.livro || '',
+                            folha: dados.folha || formNo.casamento.registroCivil?.folha || '',
+                            termo: dados.termo || formNo.casamento.registroCivil?.termo || '',
+                          };
+                          
+                          const temTodosCampos = novoRegistroCivil.cartorio || novoRegistroCivil.livro || novoRegistroCivil.folha || novoRegistroCivil.termo;
+                          
+                          setFormNo({
+                            ...formNo,
+                            casamento: {
+                              ...formNo.casamento!,
+                              local: dados.municipio ? `${dados.municipio}${dados.uf ? '/' + dados.uf : ''}` : formNo.casamento.local,
+                              registroCivil: novoRegistroCivil,
+                              completo: !!(formNo.casamento.data && temTodosCampos)
+                            }
+                          });
+                        }}
+                      />
                       
                       <div className="grid grid-cols-2 gap-2">
                         <div className="space-y-1">
@@ -1677,12 +1741,42 @@ export default function FichaCliente() {
                     </div>
                   </div>
 
-                  {/* Civil Registry Fields for Death */}
+                  {/* Civil Registry Fields for Death - with OCR */}
                   {formNo.obito.data && (
-                    <div className="pt-2 space-y-2 bg-white rounded-md p-3 border border-gray-300/50">
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-700 flex items-center gap-1">
-                        <FileText className="size-3" /> Dados do Registro Civil
-                      </p>
+                    <div className="pt-2 space-y-3 bg-white rounded-md p-3 border border-gray-300/50">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-700 flex items-center gap-1">
+                          <FileText className="size-3" /> Dados do Registro Civil
+                        </p>
+                      </div>
+                      
+                      {/* Image Paste Zone - OCR */}
+                      <ImagePasteZone 
+                        label="Cole aqui a imagem do registro (Ctrl+V)"
+                        onDadosExtraidos={(dados) => {
+                          console.log('Dados extraídos Óbito:', dados);
+                          
+                          const novoRegistroCivil = {
+                            ...(formNo.obito.registroCivil || {}),
+                            cartorio: dados.cartorio || formNo.obito.registroCivil?.cartorio || '',
+                            livro: dados.livro || formNo.obito.registroCivil?.livro || '',
+                            folha: dados.folha || formNo.obito.registroCivil?.folha || '',
+                            termo: dados.termo || formNo.obito.registroCivil?.termo || '',
+                          };
+                          
+                          const temTodosCampos = novoRegistroCivil.cartorio || novoRegistroCivil.livro || novoRegistroCivil.folha || novoRegistroCivil.termo;
+                          
+                          setFormNo({
+                            ...formNo,
+                            obito: {
+                              ...formNo.obito!,
+                              local: dados.municipio ? `${dados.municipio}${dados.uf ? '/' + dados.uf : ''}` : formNo.obito.local,
+                              registroCivil: novoRegistroCivil,
+                              completo: !!(formNo.obito.data && temTodosCampos)
+                            }
+                          });
+                        }}
+                      />
                       
                       <div className="grid grid-cols-2 gap-2">
                         <div className="space-y-1">
