@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { Mail, MessageCircle, ShieldCheck } from "lucide-react";
 import { SITE, whatsappLink } from "@/lib/site";
 import Image from "next/image";
+import { LGPDModal } from "@/components/landing/lgpd-modal";
 
 const FOOTER_LINKS = [
   {
@@ -23,18 +25,19 @@ const FOOTER_LINKS = [
     links: [
       { label: "Perguntas Frequentes", href: "#duvidas" },
       { label: "Falar via WhatsApp", href: whatsappLink() },
-      { label: "Política de Privacidade", href: "#" },
       { label: "Termos de Uso", href: "#" },
     ],
   },
 ];
 
 export function SiteFooter() {
+  const [lgpdOpen, setLgpdOpen] = useState(false);
+
   return (
     <footer className="bg-navy-dark text-white/70">
       {/* CTA band */}
       <div className="border-b border-white/10">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-5 px-4 py-10 text-center sm:px-6 lg:flex-row lg:px-8 lg:text-left">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-5 px-4 py-10 text-center sm:px-6 lg:flex-row lg:text-left">
           <div>
             <h3 className="font-serif text-2xl font-700 text-white">
               Pronto para encontrar o seu passado?
@@ -126,6 +129,19 @@ export function SiteFooter() {
                       </a>
                     </li>
                   ))}
+                  
+                  {/* Link LGPD na coluna Dúvidas */}
+                  {col.title === "Dúvidas" && (
+                    <li>
+                      <button
+                        onClick={() => setLgpdOpen(true)}
+                        className="flex items-center gap-1.5 text-sm text-gold/80 transition-colors hover:text-gold font-medium"
+                      >
+                        <ShieldCheck className="size-3.5" />
+                        Política de Privacidade & LGPD
+                      </button>
+                    </li>
+                  )}
                 </ul>
               </div>
             ))}
@@ -139,14 +155,15 @@ export function SiteFooter() {
             reservados.
           </p>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-            <a href="#" className="transition-colors hover:text-white">
-              Política de Privacidade
-            </a>
+            <button 
+              onClick={() => setLgpdOpen(true)}
+              className="transition-colors hover:text-gold flex items-center gap-1.5 font-medium"
+            >
+              <ShieldCheck className="size-3.5" />
+              Política de Privacidade & LGPD
+            </button>
             <a href="#" className="transition-colors hover:text-white">
               Termos de Uso
-            </a>
-            <a href="#" className="transition-colors hover:text-white">
-              LGPD
             </a>
             <a href="/login" className="transition-colors hover:text-gold text-white/30">
               Painel Interno
@@ -166,7 +183,23 @@ export function SiteFooter() {
             informações fornecidas pelo requerente.
           </p>
         </div>
+
+        {/* Badge LGPD */}
+        <div className="mt-4 flex justify-center">
+          <button 
+            onClick={() => setLgpdOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/[0.02] hover:bg-white/[0.05] transition-all group"
+          >
+            <ShieldCheck className="size-4 text-gold/60 group-hover:text-gold" />
+            <span className="text-[10px] text-white/40 group-hover:text-white/60 tracking-wide">
+              SEU DADOS PROTEGIDOS PELA LGPD
+            </span>
+          </button>
+        </div>
       </div>
+
+      {/* Modal LGPD */}
+      <LGPDModal isOpen={lgpdOpen} onClose={() => setLgpdOpen(false)} />
     </footer>
   );
 }
