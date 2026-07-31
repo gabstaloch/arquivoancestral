@@ -99,12 +99,41 @@ function PersonCard({
   
   const relacaoLabels: Record<string, string> = {
     requerente: "Requerente",
+    // 1ª Geração - Pais
     pai: "Pai",
     mae: "Mãe",
+    // 2ª Geração - Avós
     avo_paterno: "Avô Paterno",
     avo_paterna: "Avó Paterna",
     avo_materno: "Avô Materno",
     avo_materna: "Avó Materna",
+    // 3ª Geração - Bisavós
+    bisavo_paterno_paterno: "Bisavô Paterno-Paterno",
+    bisavo_paterno_paterna: "Bisavó Paterno-Paterna",
+    bisavo_paterno_materno: "Bisavô Paterno-Materno",
+    bisavo_paterno_materna: "Bisavó Paterno-Materna",
+    bisavo_materno_paterno: "Bisavô Materno-Paterno",
+    bisavo_materno_paterna: "Bisavó Materno-Paterna",
+    bisavo_materno_materno: "Bisavô Materno-Materno",
+    bisavo_materno_materna: "Bisavó Materno-Materna",
+    // 4ª Geração - Tetravós
+    tetravô_1: "Tetravô (PPPP)",
+    tetravó_1: "Tetravó (PPPM)",
+    tetravô_2: "Tetravô (PPMP)",
+    tetravó_2: "Tetravó (PPMM)",
+    tetravô_3: "Tetravô (PMPP)",
+    tetravó_3: "Tetravó (PMPM)",
+    tetravô_4: "Tetravô (PMMP)",
+    tetravó_4: "Tetravó (PMMM)",
+    tetravô_5: "Tetravô (MPPP)",
+    tetravó_5: "Tetravó (MPPM)",
+    tetravô_6: "Tetravô (MPMP)",
+    tetravó_6: "Tetravó (MPMM)",
+    tetravô_7: "Tetravô (MMPP)",
+    tetravó_7: "Tetravó (MMPM)",
+    tetravô_8: "Tetravô (MMMP)",
+    tetravó_8: "Tetravó (MMMM)",
+    // Ancestral Europeu/Emigrante
     ancestral: "Ancestral Europeu",
   };
 
@@ -918,12 +947,45 @@ export default function FichaCliente() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
+                        {/* 1ª Geração - Pais */}
                         <SelectItem value="pai">Pai</SelectItem>
                         <SelectItem value="mae">Mãe</SelectItem>
+                        
+                        {/* 2ª Geração - Avós */}
                         <SelectItem value="avo_paterno">Avô Paterno</SelectItem>
                         <SelectItem value="avo_paterna">Avó Paterna</SelectItem>
                         <SelectItem value="avo_materno">Avô Materno</SelectItem>
                         <SelectItem value="avo_materna">Avó Materna</SelectItem>
+                        
+                        {/* 3ª Geração - Bisavós */}
+                        <SelectItem value="bisavo_paterno_paterno">Bisavô Paterno-Paterno</SelectItem>
+                        <SelectItem value="bisavo_paterno_paterna">Bisavó Paterno-Paterna</SelectItem>
+                        <SelectItem value="bisavo_paterno_materno">Bisavô Paterno-Materno</SelectItem>
+                        <SelectItem value="bisavo_paterno_materna">Bisavó Paterno-Materna</SelectItem>
+                        <SelectItem value="bisavo_materno_paterno">Bisavô Materno-Paterno</SelectItem>
+                        <SelectItem value="bisavo_materno_paterna">Bisavó Materno-Paterna</SelectItem>
+                        <SelectItem value="bisavo_materno_materno">Bisavô Materno-Materno</SelectItem>
+                        <SelectItem value="bisavo_materno_materna">Bisavó Materno-Materna</SelectItem>
+                        
+                        {/* 4ª Geração - Tetravós */}
+                        <SelectItem value="tetravô_1">Tetravô 1 (PPPP)</SelectItem>
+                        <SelectItem value="tetravó_1">Tetravó 1 (PPPM)</SelectItem>
+                        <SelectItem value="tetravô_2">Tetravô 2 (PPMP)</SelectItem>
+                        <SelectItem value="tetravó_2">Tetravó 2 (PPMM)</SelectItem>
+                        <SelectItem value="tetravô_3">Tetravô 3 (PMPP)</SelectItem>
+                        <SelectItem value="tetravó_3">Tetravó 3 (PMPM)</SelectItem>
+                        <SelectItem value="tetravô_4">Tetravô 4 (PMMP)</SelectItem>
+                        <SelectItem value="tetravó_4">Tetravó 4 (PMMM)</SelectItem>
+                        <SelectItem value="tetravô_5">Tetravô 5 (MPPP)</SelectItem>
+                        <SelectItem value="tetravó_5">Tetravó 5 (MPPM)</SelectItem>
+                        <SelectItem value="tetravô_6">Tetravô 6 (MPMP)</SelectItem>
+                        <SelectItem value="tetravó_6">Tetravó 6 (MPMM)</SelectItem>
+                        <SelectItem value="tetravô_7">Tetravô 7 (MMPP)</SelectItem>
+                        <SelectItem value="tetravó_7">Tetravó 7 (MMPM)</SelectItem>
+                        <SelectItem value="tetravô_8">Tetravô 8 (MMMP)</SelectItem>
+                        <SelectItem value="tetravó_8">Tetravó 8 (MMMM)</SelectItem>
+                        
+                        {/* Ancestral Europeu/Emigrante */}
                         <SelectItem value="ancestral">Ancestral Europeu / Emigrante</SelectItem>
                       </SelectContent>
                     </Select>
