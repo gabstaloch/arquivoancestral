@@ -1,0 +1,1939 @@
+     1→"use client";
+     2→
+     3→import { useState, useEffect } from "react";
+     4→import { useRouter, useSearchParams } from "next/navigation";
+     5→import { Button } from "@/components/ui/button";
+     6→import { Input } from "@/components/ui/input";
+     7→import { Label } from "@/components/ui/label";
+     8→import { Badge } from "@/components/ui/badge";
+     9→import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+    10→import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+    11→import {
+    12→  Select,
+    13→  SelectContent,
+    14→  SelectItem,
+    15→  SelectTrigger,
+    16→  SelectValue,
+    17→} from "@/components/ui/select";
+    18→import {
+    19→  Dialog,
+    20→  DialogContent,
+    21→  DialogDescription,
+    22→  DialogHeader,
+    23→  DialogTitle,
+    24→  DialogTrigger,
+    25→} from "@/components/ui/dialog";
+    26→import {
+    27→  ArrowLeft,
+    28→  Save,
+    29→  Plus,
+    30→  Trash2,
+    31→  Edit2,
+    32→  Check,
+    33→  X,
+    34→  TreePine,
+    35→  User,
+    36→  Users,
+    37→  DollarSign,
+    38→  Clock,
+    39→  FileText,
+    40→  CalendarDays,
+    41→  MapPin,
+    42→  AlertCircle,
+    43→  ExternalLink,
+    44→  CheckCircle2,
+    45→} from "lucide-react";
+    46→import Image from "next/image";
+    47→import {
+    48→  Cliente,
+    49→  NoArvore,
+    50→  Despesa,
+    51→  EntradaTimeline,
+    52→  StatusCliente,
+    53→  getClienteById,
+    54→  updateCliente,
+    55→  addNoArvore,
+    56→  updateNoArvore,
+    57→  deleteNoArvore,
+    58→  addDespesa,
+    59→  updateStatusPagamento,
+    60→  deleteDespesa,
+    61→  addEntradaTimeline,
+    62→  deleteEntradaTimeline,
+    63→  calcularLucroLiquido,
+    64→  getStatusLabel,
+    65→  getStatusColor,
+    66→  getStatusRegistroLabel,
+    67→  getStatusRegistroColor,
+    68→  generateId,
+    69→} from "@/lib/crm-store";
+    70→import MatriculaPasteZone from "@/components/crm/image-paste-zone";
+    71→import { DadosExtraidosOCR } from "@/lib/ocr-utils";
+    72→
+    73→// Formata data brasileira: 10042004 → 10/04/2004
+    74→function formatarData(valor: string): string {
+    75→  // Remove tudo que não é dígito
+    76→  const digitos = valor.replace(/\D/g, "");
+    77→  
+    78→  // Limita a 8 dígitos (DDMMYYYY)
+    79→  const limitados = digitos.slice(0, 8);
+    80→  
+    81→  // Aplica a máscara progressiva
+    82→  if (limitados.length === 0) return "";
+    83→  if (limitados.length <= 2) return limitados;
+    84→  if (limitados.length <= 4) return `${limitados.slice(0, 2)}/${limitados.slice(2)}`;
+    85→  return `${limitados.slice(0, 2)}/${limitados.slice(2, 4)}/${limitados.slice(4)}`;
+    86→}
+    87→
+    88→// Person card for family tree - ALL SAME SIZE with Registry Indicators
+    89→function PersonCard({ 
+    90→  no, 
+    91→  onEdit,
+    92→  showTooltip = true
+    93→}: { 
+    94→  no: NoArvore; 
+    95→  onEdit: (no: NoArvore) => void;
+    96→  showTooltip?: boolean;
+    97→}) {
+    98→  const [hovered, setHovered] = useState(false);
+    99→  
+   100→  const relacaoLabels: Record<string, string> = {
+   101→    requerente: "Requerente",
+   102→    pai: "Pai",
+   103→    mae: "Mãe",
+   104→    avo_paterno: "Avô Paterno",
+   105→    avo_paterna: "Avó Paterna",
+   106→    avo_materno: "Avô Materno",
+   107→    avo_materna: "Avó Materna",
+   108→    ancestral: "Ancestral Europeu",
+   109→  };
+   110→
+   111→  // Get years of life
+   112→  const anoNasc = no.nascimento?.data?.split('/')?.[2] || '';
+   113→  const anoObito = no.obito?.data?.split('/')?.[2] || '';
+   114→  const anosVida = anoNasc ? (anoObito ? `${anoNasc}-${anoObito}` : `${anoNasc}-`) : '';
+   115→
+   116→  // Check if registry data is complete
+   117→  const hasNascimento = !!(no.nascimento?.data && no.nascimento.completo);
+   118→  const hasCasamento = !!(no.casamento?.data && no.casamento.completo);
+   119→  const hasObito = !!(no.obito?.data && no.obito.completo);
+   120→
+   121→  return (
+   122→    <div 
+   123→      className="relative group"
+   124→      onMouseEnter={() => setHovered(true)}
+   125→      onMouseLeave={() => setHovered(false)}
+   126→    >
+   127→      <Card 
+   128→        className={`
+   129→          cursor-pointer transition-all duration-200 
+   130→          hover:shadow-xl hover:border-navy/50 hover:-translate-y-1
+   131→          border border-navy/20 bg-white w-[155px]
+   132→        `}
+   133→        onClick={() => onEdit(no)}
+   134→      >
+   135→        <CardContent className="p-3 text-center">
+   136→          {/* Avatar placeholder - SAME SIZE FOR ALL */}
+   137→          <div className="mx-auto size-11 rounded-full bg-navy/5 flex items-center justify-center">
+   138→            <User className="size-5 text-navy/60" />
+   139→          </div>
+   140→          
+   141→          {/* Name */}
+   142→          <h4 className="font-medium text-navy mt-2 truncate text-sm">
+   143→            {no.nomeCompleto || 'Adicionar'}
+   144→          </h4>
+   145→          
+   146→          {/* Years */}
+   147→          {anosVida && (
+   148→            <p className="text-muted-foreground text-xs">
+   149→              {anosVida}
+   150→            </p>
+   151→          )}
+   152→
+   153→          {/* Status badge */}
+   154→          <Badge 
+   155→            variant="outline" 
+   156→            className={`
+   157→              mt-1.5 text-[9px] border-current
+   158→              ${no.statusRegistro === 'localizado' ? 'text-green-700 border-green-300 bg-green-50' :
+   159→                no.statusRegistro === 'pendente' ? 'text-yellow-700 border-yellow-300 bg-yellow-50' :
+   160→                no.statusRegistro === 'em_busca' ? 'text-blue-700 border-blue-300 bg-blue-50' :
+   161→                'text-gray-500 border-gray-300 bg-gray-50'}
+   162→            `}
+   163→          >
+   164→            {getStatusRegistroLabel(no.statusRegistro)}
+   165→          </Badge>
+   166→
+   167→          {/* Registry indicators - Show when data is complete */}
+   168→          {(hasNascimento || hasCasamento || hasObito) && (
+   169→            <div className="mt-2 flex flex-wrap items-center justify-center gap-1">
+   170→              {hasNascimento && (
+   171→                <span className="inline-flex items-center gap-0.5 text-[9px] font-medium text-green-700 bg-green-50 px-1.5 py-0.5 rounded">
+   172→                  <CheckCircle2 className="size-2.5" />
+   173→                  Nasc
+   174→                </span>
+   175→              )}
+   176→              {hasCasamento && (
+   177→                <span className="inline-flex items-center gap-0.5 text-[9px] font-medium text-pink-700 bg-pink-50 px-1.5 py-0.5 rounded">
+   178→                  <CheckCircle2 className="size-2.5" />
+   179→                  Casam
+   180→                </span>
+   181→              )}
+   182→              {hasObito && (
+   183→                <span className="inline-flex items-center gap-0.5 text-[9px] font-medium text-gray-700 bg-gray-100 px-1.5 py-0.5 rounded">
+   184→                  <CheckCircle2 className="size-2.5" />
+   185→                  Óbito
+   186→                </span>
+   187→              )}
+   188→            </div>
+   189→          )}
+   190→        </CardContent>
+   191→      </Card>
+   192→
+   193→      {/* Detailed Tooltip on Hover with Civil Registry Data */}
+   194→      {showTooltip && hovered && (
+   195→        <div className="absolute z-50 left-full ml-3 top-0 w-[300px] shadow-2xl rounded-xl border border-navy/15 bg-white p-4 animate-in fade-in zoom-in-95 duration-200">
+   196→          {/* Header */}
+   197→          <div className="flex items-start gap-3 pb-3 border-b border-navy/10">
+   198→            <div className="size-12 rounded-full bg-navy/10 flex items-center justify-center shrink-0">
+   199→              <User className="size-6 text-navy/70" />
+   200→            </div>
+   201→            <div className="min-w-0 flex-1">
+   202→              <h4 className="font-semibold text-navy">{no.nomeCompleto}</h4>
+   203→              <Badge variant="outline" className="mt-1 text-[10px]">
+   204→                {relacaoLabels[no.relacao] || no.relacao}
+   205→              </Badge>
+   206→            </div>
+   207→          </div>
+   208→
+   209→          {/* Civil Registry Details */}
+   210→          <div className="mt-3 space-y-3 text-sm max-h-[280px] overflow-y-auto elegant-scroll">
+   211→            
+   212→            {/* Nascimento Section */}
+   213→            {no.nascimento?.data && (
+   214→              <div className={`rounded-lg p-2.5 ${hasNascimento ? 'bg-green-50 border border-green-200' : 'bg-gray-50 border border-gray-200'}`}>
+   215→                <div className="flex items-center gap-2 mb-2">
+   216→                  {hasNascimento ? (
+   217→                    <CheckCircle2 className="size-4 text-green-600 shrink-0" />
+   218→                  ) : (
+   219→                    <CalendarDays className="size-4 text-green-600 shrink-0" />
+   220→                  )}
+   221→                  <span className="font-semibold text-green-800 text-xs uppercase tracking-wide">Nascimento</span>
+   222→                </div>
+   223→                
+   224→                <div className="space-y-1 ml-6 text-xs">
+   225→                  <p><span className="text-muted-foreground">Data:</span> <span className="font-medium">{no.nascimento.data}</span></p>
+   226→                  {no.nascimento.local && <p><span className="text-muted-foreground">Local:</span> <span className="font-medium">{no.nascimento.local}</span></p>}
+   227→                  
+   228→                  {/* Civil Registry Details */}
+   229→                  {no.nascimento.registroCivil && (
+   230→                    <div className="mt-2 pt-2 border-t border-green-200/50 space-y-1">
+   231→                      {no.nascimento.registroCivil.cartorio && (
+   232→                        <p><span className="text-muted-foreground">Cartório:</span> <span className="font-medium">{no.nascimento.registroCivil.cartorio}</span></p>
+   233→                      )}
+   234→                      {no.nascimento.registroCivil.livro && (
+   235→                        <p><span className="text-muted-foreground">Livro:</span> <span className="font-medium">{no.nascimento.registroCivil.livro}</span></p>
+   236→                      )}
+   237→                      {no.nascimento.registroCivil.folha && (
+   238→                        <p><span className="text-muted-foreground">Folha:</span> <span className="font-medium">{no.nascimento.registroCivil.folha}</span></p>
+   239→                      )}
+   240→                      {no.nascimento.registroCivil.termo && (
+   241→                        <p><span className="text-muted-foreground">Termo:</span> <span className="font-medium">{no.nascimento.registroCivil.termo}</span></p>
+   242→                      )}
+   243→                    </div>
+   244→                  )}
+   245→                </div>
+   246→              </div>
+   247→            )}
+   248→
+   249→            {/* Casamento Section */}
+   250→            {no.casamento?.data && (
+   251→              <div className={`rounded-lg p-2.5 ${hasCasamento ? 'bg-pink-50 border border-pink-200' : 'bg-gray-50 border border-gray-200'}`}>
+   252→                <div className="flex items-center gap-2 mb-2">
+   253→                  {hasCasamento ? (
+   254→                    <CheckCircle2 className="size-4 text-pink-600 shrink-0" />
+   255→                  ) : (
+   256→                    <FileText className="size-4 text-pink-600 shrink-0" />
+   257→                  )}
+   258→                  <span className="font-semibold text-pink-800 text-xs uppercase tracking-wide">Casamento</span>
+   259→                </div>
+   260→                
+   261→                <div className="space-y-1 ml-6 text-xs">
+   262→                  <p><span className="text-muted-foreground">Data:</span> <span className="font-medium">{no.casamento.data}</span></p>
+   263→                  
+   264→                  {/* Civil Registry Details */}
+   265→                  {no.casamento.registroCivil && (
+   266→                    <div className="mt-2 pt-2 border-t border-pink-200/50 space-y-1">
+   267→                      {no.casamento.registroCivil.cartorio && (
+   268→                        <p><span className="text-muted-foreground">Cartório:</span> <span className="font-medium">{no.casamento.registroCivil.cartorio}</span></p>
+   269→                      )}
+   270→                      {no.casamento.registroCivil.livro && (
+   271→                        <p><span className="text-muted-foreground">Livro:</span> <span className="font-medium">{no.casamento.registroCivil.livro}</span></p>
+   272→                      )}
+   273→                      {no.casamento.registroCivil.folha && (
+   274→                        <p><span className="text-muted-foreground">Folha:</span> <span className="font-medium">{no.casamento.registroCivil.folha}</span></p>
+   275→                      )}
+   276→                      {no.casamento.registroCivil.termo && (
+   277→                        <p><span className="text-muted-foreground">Termo:</span> <span className="font-medium">{no.casamento.registroCivil.termo}</span></p>
+   278→                      )}
+   279→                    </div>
+   280→                  )}
+   281→                </div>
+   282→              </div>
+   283→            )}
+   284→
+   285→            {/* Óbito Section */}
+   286→            {no.obito?.data && (
+   287→              <div className={`rounded-lg p-2.5 ${hasObito ? 'bg-gray-100 border border-gray-300' : 'bg-gray-50 border border-gray-200'}`}>
+   288→                <div className="flex items-center gap-2 mb-2">
+   289→                  {hasObito ? (
+   290→                    <CheckCircle2 className="size-4 text-gray-600 shrink-0" />
+   291→                  ) : (
+   292→                    <AlertCircle className="size-4 text-gray-500 shrink-0" />
+   293→                  )}
+   294→                  <span className="font-semibold text-gray-800 text-xs uppercase tracking-wide">Óbito</span>
+   295→                </div>
+   296→                
+   297→                <div className="space-y-1 ml-6 text-xs">
+   298→                  <p><span className="text-muted-foreground">Data:</span> <span className="font-medium">{no.obito.data}</span></p>
+   299→                  
+   300→                  {/* Civil Registry Details */}
+   301→                  {no.obito.registroCivil && (
+   302→                    <div className="mt-2 pt-2 border-t border-gray-300/50 space-y-1">
+   303→                      {no.obito.registroCivil.cartorio && (
+   304→                        <p><span className="text-muted-foreground">Cartório:</span> <span className="font-medium">{no.obito.registroCivil.cartorio}</span></p>
+   305→                      )}
+   306→                      {no.obito.registroCivil.livro && (
+   307→                        <p><span className="text-muted-foreground">Livro:</span> <span className="font-medium">{no.obito.registroCivil.livro}</span></p>
+   308→                      )}
+   309→                      {no.obito.registroCivil.folha && (
+   310→                        <p><span className="text-muted-foreground">Folha:</span> <span className="font-medium">{no.obito.registroCivil.folha}</span></p>
+   311→                      )}
+   312→                      {no.obito.registroCivil.termo && (
+   313→                        <p><span className="text-muted-foreground">Termo:</span> <span className="font-medium">{no.obito.registroCivil.termo}</span></p>
+   314→                      )}
+   315→                    </div>
+   316→                  )}
+   317→                </div>
+   318→              </div>
+   319→            )}
+   320→
+   321→            {/* Name variations */}
+   322→            {no.variacoesGrafia && (
+   323→              <div className="flex items-start gap-2 p-2 bg-purple-50 rounded-lg border border-purple-200">
+   324→                <MapPin className="size-4 text-purple-600 shrink-0 mt-0.5" />
+   325→                <div>
+   326→                  <p className="font-medium text-purple-800 text-xs">Variações de Grafia</p>
+   327→                  <p className="text-purple-700 italic text-xs">{no.variacoesGrafia}</p>
+   328→                </div>
+   329→              </div>
+   330→            )}
+   331→
+   332→            {/* Annotations */}
+   333→            {no.anotacoesCartorio && (
+   334→              <div className="flex items-start gap-2 p-2 bg-orange-50 rounded-lg border border-orange-200">
+   335→                <FileText className="size-4 text-orange-600 shrink-0 mt-0.5" />
+   336→                <div>
+   337→                  <p className="font-medium text-orange-800 text-xs">Anotações do Cartório</p>
+   338→                  <p className="text-orange-700 text-xs">{no.anotacoesCartorio}</p>
+   339→                </div>
+   340→              </div>
+   341→            )}
+   342→          </div>
+   343→
+   344→          {/* Footer - Status */}
+   345→          <div className="mt-3 pt-3 border-t border-navy/10">
+   346→            <div className="flex items-center justify-between">
+   347→              <span className="text-xs text-muted-foreground">Status do Registro:</span>
+   348→              <Badge className={`text-[10px] ${
+   349→                no.statusRegistro === 'localizado' ? 'bg-green-100 text-green-800' :
+   350→                no.statusRegistro === 'pendente' ? 'bg-yellow-100 text-yellow-800' :
+   351→                no.statusRegistro === 'em_busca' ? 'bg-blue-100 text-blue-800' :
+   352→                'bg-gray-100 text-gray-800'
+   353→              }`}>
+   354→                {getStatusRegistroLabel(no.statusRegistro)}
+   355→              </Badge>
+   356→            </div>
+   357→          </div>
+   358→
+   359→          {/* Click to edit hint */}
+   360→          <p className="text-[10px] text-center text-muted-foreground mt-3 pt-2 border-t border-navy/5">
+   361→            Clique para editar este registro
+   362→          </p>
+   363→        </div>
+   364→      )}
+   365→    </div>
+   366→  );
+   367→}
+   368→
+   369→// Couple row (husband and wife side by side) - SAME SIZE
+   370→function CoupleRow({ 
+   371→  homem, 
+   372→  mulher, 
+   373→  onEdit 
+   374→}: { 
+   375→  homem?: NoArvore; 
+   376→  mulher?: NoArvore; 
+   377→  onEdit: (no: NoArvore) => void;
+   378→}) {
+   379→  return (
+   380→    <div className="flex items-center justify-center gap-1.5">
+   381→      {homem ? (
+   382→        <PersonCard no={homem} onEdit={onEdit} />
+   383→      ) : (
+   384→        <EmptyCard label="Pai" />
+   385→      )}
+   386→      
+   387→      {(homem || mulher) && (
+   388→        <div className="w-5 h-px bg-gradient-to-r from-navy/30 to-transparent rounded" />
+   389→      )}
+   390→      
+   391→      {mulher ? (
+   392→        <PersonCard no={mulher} onEdit={onEdit} />
+   393→      ) : (
+   394→        <EmptyCard label="Mãe" />
+   395→      )}
+   396→    </div>
+   397→  );
+   398→}
+   399→
+   400→// Empty card placeholder
+   401→function EmptyCard({ label }: { label: string }) {
+   402→  return (
+   403→    <Card className="border-dashed border-2 border-navy/20 bg-navy/[0.02] w-[155px] opacity-60">
+   404→      <CardContent className="p-3 text-center">
+   405→        <div className="mx-auto size-11 rounded-full bg-navy/5 flex items-center justify-center border-2 border-dashed border-navy/20">
+   406→          <Plus className="size-4 text-navy/30" />
+   407→        </div>
+   408→        <p className="text-xs text-navy/40 mt-2 font-medium">{label}</p>
+   409→      </CardContent>
+   410→    </Card>
+   411→  );
+   412→}
+   413→
+   414→// Main Family Tree Component - Clean & Centered Layout
+   415→function FamilyTree({ 
+   416→  nos, 
+   417→  onEdit, 
+   418→  onAdd 
+   419→}: { 
+   420→  nos: NoArvore[]; 
+   421→  onEdit: (no: NoArvore) => void;
+   422→  onAdd: (relacao: string) => void;
+   423→}) {
+   424→  // Organize nodes by relationship
+   425→  const requerente = nos.find(n => n.relacao === 'requerente');
+   426→  const pai = nos.find(n => n.relacao === 'pai');
+   427→  const mae = nos.find(n => n.relacao === 'mae');
+   428→  const avoPaterno = nos.find(n => n.relacao === 'avo_paterno');
+   429→  const avoPaterna = nos.find(n => n.relacao === 'avo_paterna');
+   430→  const avoMaterno = nos.find(n => n.relacao === 'avo_materno');
+   431→  const avoMaterna = nos.find(n => n.relacao === 'avo_materna');
+   432→  const ancestrais = nos.filter(n => n.relacao === 'ancestral');
+   433→
+   434→  const hasParents = !!(pai || mae);
+   435→  const hasGrandparents = !!(avoPaterno || avoPaterna || avoMaterno || avoMaterna);
+   436→  const hasAncestors = ancestrais.length > 0;
+   437→
+   438→  return (
+   439→    <div className="py-10 overflow-x-auto">
+   440→      <div className="flex flex-col-reverse items-center gap-8 min-w-[500px]">
+   441→        
+   442→        {/* GENERATION 0: Requerente (BOTTOM) */}
+   443→        <div className="tree-node">
+   444→          {requerente ? (
+   445→            <PersonCard no={requerente} onEdit={onEdit} />
+   446→          ) : (
+   447→            <Card 
+   448→              className="cursor-pointer border-dashed border-2 border-navy/30 bg-navy/5 w-[155px] hover:bg-navy/10 transition-colors" 
+   449→              onClick={() => onAdd('requerente')}
+   450→            >
+   451→              <CardContent className="p-4 text-center">
+   452→                <User className="size-6 mx-auto text-navy/40" />
+   453→                <p className="text-sm font-medium text-navy/60 mt-2">Requerente</p>
+   454→                <p className="text-[10px] text-navy/40">Clique para adicionar</p>
+   455→              </CardContent>
+   456→            </Card>
+   457→          )}
+   458→          
+   459→          {/* Vertical line up from requerente */}
+   460→          {hasParents && (
+   461→            <div className="absolute top-full left-1/2 -translate-x-1/2 w-0.5 h-8 bg-gradient-to-t from-navy/20 to-navy/30" />
+   462→          )}
+   463→        </div>
+   464→
+   465→        {/* Connector from Requerente to Parents */}
+   466→        {hasParents && (
+   467→          <div className="relative w-full max-w-md flex justify-center">
+   468→            {/* Horizontal bar */}
+   469→            <div className="absolute bottom-0 w-full max-w-[320px] h-0.5 bg-gradient-to-r from-transparent via-navy/25 to-transparent rounded-full" />
+   470→            
+   471→            {/* Vertical drops to parents */}
+   472→            <div className="absolute bottom-0 left-[calc(50%-90px)] w-0.5 h-4 bg-navy/25 translate-y-full" />
+   473→            <div className="absolute bottom-0 right-[calc(50%-90px)] w-0.5 h-4 bg-navy/25 translate-y-full" />
+   474→          </div>
+   475→        )}
+   476→
+   477→        {/* GENERATION 1: Parents */}
+   478→        {hasParents && (
+   479→          <div className="relative tree-parents">
+   480→            <CoupleRow homem={pai} mulher={mae} onEdit={onEdit} />
+   481→            
+   482→            {/* Vertical lines up from parents */}
+   483→            {hasGrandparents && (
+   484→              <>
+   485→                <div className="absolute top-full left-[calc(50%-85px)] w-0.5 h-6 bg-gradient-to-t from-navy/15 to-navy/25" />
+   486→                <div className="absolute top-full right-[calc(50%-85px)] w-0.5 h-6 bg-gradient-to-t from-navy/15 to-navy/25" />
+   487→              </>
+   488→            )}
+   489→          </div>
+   490→        )}
+   491→
+   492→        {/* Connector from Parents to Grandparents */}
+   493→        {hasGrandparents && hasParents && (
+   494→          <div className="relative w-full max-w-lg flex justify-center">
+   495→            {/* Left horizontal (paternal) */}
+   496→            <div className="absolute bottom-0 left-[calc(50%-200px)] w-[160px] h-0.5 bg-gradient-to-r from-transparent via-navy/20 to-transparent rounded-full" />
+   497→            <div className="absolute bottom-0 left-[calc(50%-280px)] w-0.5 h-4 bg-navy/20 translate-y-full" />
+   498→            <div className="absolute bottom-0 left-[calc(50%-120px)] w-0.5 h-4 bg-navy/20 translate-y-full" />
+   499→            
+   500→            {/* Right horizontal (maternal) */}
+   501→            <div className="absolute bottom-0 right-[calc(50%-200px)] w-[160px] h-0.5 bg-gradient-to-l from-transparent via-navy/20 to-transparent rounded-full" />
+   502→            <div className="absolute bottom-0 right-[calc(50%-280px)] w-0.5 h-4 bg-navy/20 translate-y-full" />
+   503→            <div className="absolute bottom-0 right-[calc(50%-120px)] w-0.5 h-4 bg-navy/20 translate-y-full" />
+   504→          </div>
+   505→        )}
+   506→
+   507→        {/* GENERATION 2: Grandparents */}
+   508→        {hasGrandparents && (
+   509→          <div className="flex items-start justify-center gap-12 w-full max-w-xl">
+   510→            {/* Paternal grandparents */}
+   511→            <div className="flex flex-col items-center relative">
+   512→              {(avoPaterno || avoPaterna) ? (
+   513→                <CoupleRow homem={avoPaterno} mulher={avoPaterna} onEdit={onEdit} />
+   514→              ) : (
+   515→                <div className="flex gap-2 opacity-50">
+   516→                  <EmptyCard label="Avô Pat." />
+   517→                  <EmptyCard label="Avó Pat." />
+   518→                </div>
+   519→              )}
+   520→              
+   521→              {/* Line up to ancestors if exists */}
+   522→              {hasAncestors && (
+   523→                <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-0.5 h-6 bg-gradient-to-t from-navy/15 to-navy/20" />
+   524→              )}
+   525→            </div>
+   526→            
+   527→            {/* Maternal grandparents */}
+   528→            <div className="flex flex-col items-center relative">
+   529→              {(avoMaterno || avoMaterna) ? (
+   530→                <CoupleRow homem={avoMaterno} mulher={avoMaterna} onEdit={onEdit} />
+   531→              ) : (
+   532→                <div className="flex gap-2 opacity-50">
+   533→                  <EmptyCard label="Avô Mat." />
+   534→                  <EmptyCard label="Avó Mat." />
+   535→                </div>
+   536→              )}
+   537→              
+   538→              {/* Line up to ancestors if exists */}
+   539→              {hasAncestors && (
+   540→                <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-0.5 h-6 bg-gradient-to-t from-navy/15 to-navy/20" />
+   541→              )}
+   542→            </div>
+   543→          </div>
+   544→        )}
+   545→
+   546→        {/* Ancestors section */}
+   547→        {hasAncestors && (
+   548→          <>
+   549→            {/* Horizontal connector for ancestors */}
+   550→            <div className="relative w-full max-w-lg flex justify-center">
+   551→              <div className="absolute bottom-0 w-full max-w-[280px] h-0.5 bg-gradient-to-r from-transparent via-navy/20 to-transparent rounded-full" />
+   552→            </div>
+   553→            
+   554→            <div className="flex flex-col items-center gap-3 pt-2">
+   555→              <p className="text-xs font-semibold uppercase tracking-wider text-navy/40">
+   556→                Ancestrais Europeus
+   557→              </p>
+   558→              <div className="flex flex-wrap justify-center gap-3">
+   559→                {ancestrais.map(ancestral => (
+   560→                  <PersonCard key={ancestral.id} no={ancestral} onEdit={onEdit} />
+   561→                ))}
+   562→              </div>
+   563→            </div>
+   564→          </>
+   565→        )}
+   566→      </div>
+   567→    </div>
+   568→  );
+   569→}
+   570→
+   571→export default function FichaCliente() {
+   572→  const router = useRouter();
+   573→  const searchParams = useSearchParams();
+   574→  const clienteId = searchParams.get("cliente");
+   575→  
+   576→  const [cliente, setCliente] = useState<Cliente | null>(null);
+   577→  const [abaAtiva, setAbaAtiva] = useState("arvore");
+   578→  const [salvando, setSalvando] = useState(false);
+   579→  
+   580→  // Modal states
+   581→  const [noSelecionado, setNoSelecionado] = useState<NoArvore | null>(null);
+   582→  const [dialogNoAberto, setDialogNoAberto] = useState(false);
+   583→  const [dialogNovoNoAberto, setDialogNovoNoAberto] = useState(false);
+   584→  const [dialogDespesaAberto, setDialogDespesaAberto] = useState(false);
+   585→  
+   586→  // Controla qual zona de colar imagem está ativa (só uma por vez)
+   587→  const [zonaColarAtiva, setZonaColarAtiva] = useState<string | null>(null);
+   588→  
+   589→  // Form states
+   590→  const [novoNoRelacao, setNovoNoRelacao] = useState("pai");
+   591→  const [formNo, setFormNo] = useState<Partial<NoArvore>>({});
+   592→  const [formDespesa, setFormDespesa] = useState({
+   593→    descricao: "",
+   594→    valor: "",
+   595→    moeda: "BRL" as "BRL" | "EUR" | "USD",
+   596→    categoria: "outro" as Despesa["categoria"],
+   597→  });
+   598→  const [novaEntradaTitulo, setNovaEntradaTitulo] = useState("");
+   599→  const [novaEntradaDescricao, setNovaEntradaDescricao] = useState("");
+   600→  const [novoLink, setNovoLink] = useState("");
+   601→
+   602→  // Load client data
+   603→  function carregarCliente() {
+   604→    if (clienteId) {
+   605→      const c = getClienteById(clienteId);
+   606→      if (c) {
+   607→        setCliente(c);
+   608→      } else {
+   609→        router.push("/painel");
+   610→      }
+   611→    }
+   612→  }
+   613→
+   614→  useEffect(() => {
+   615→    carregarCliente();
+   616→  }, [clienteId]);
+   617→
+   618→  async function handleSalvar() {
+   619→    if (!cliente) return;
+   620→    
+   621→    setSalvando(true);
+   622→    await new Promise(r => setTimeout(r, 500));
+   623→    
+   624→    updateCliente(cliente.id, cliente);
+   625→    setSalvando(false);
+   626→    
+   627→    // Show success feedback
+   628→    alert("Ficha salva com sucesso!");
+   629→  }
+   630→
+   631→  function handleStatusChange(novoStatus: StatusCliente) {
+   632→    if (!cliente) return;
+   633→    setCliente({ ...cliente, status: novoStatus });
+   634→  }
+   635→
+   636→  // Tree operations
+   637→  function abrirEditarNo(no: NoArvore) {
+   638→    setFormNo({ ...no });
+   639→    setNoSelecionado(no);
+   640→    setZonaColarAtiva(null);  // Resetar zona ativa ao abrir
+   641→    setDialogNoAberto(true);
+   642→  }
+   643→
+   644→  function salvarNo() {
+   645→    if (!cliente || !noSelecionado) return;
+   646→    
+   647→    const atualizado = updateNoArvore(cliente.id, noSelecionado.id, formNo);
+   648→    if (atualizado) {
+   649→      setCliente({
+   650→        ...cliente,
+   651→        arvore: cliente.arvore.map(n => n.id === noSelecionado.id ? atualizado! : n)
+   652→      });
+   653→    }
+   654→    
+   655→    setDialogNoAberto(false);
+   656→    setNoSelecionado(null);
+   657→    setFormNo({});
+   658→  }
+   659→
+   660→  function adicionarNovoNo() {
+   661→    if (!cliente) return;
+   662→    
+   663→    const novoNo = addNoArvore(cliente.id, {
+   664→      nomeCompleto: "",
+   665→      relacao: novoNoRelacao as NoArvore["relacao"],
+   666→      statusRegistro: "pendente",
+   667→      variacoesGrafia: "",
+   668→      anotacoesCartorio: "",
+   669→    });
+   670→    
+   671→    if (novoNo) {
+   672→      setCliente({
+   673→        ...cliente,
+   674→        arvore: [...cliente.arvore, novoNo]
+   675→      });
+   676→      
+   677→      // Open edit dialog for the new node
+   678→      setFormNo({ ...novoNo });
+   679→      setNoSelecionado(novoNo);
+   680→      setDialogNoAberto(true);
+   681→    }
+   682→    
+   683→    setDialogNovoNoAberto(false);
+   684→  }
+   685→
+   686→  function excluirNo(noId: string) {
+   687→    if (!cliente) return;
+   688→    
+   689→    deleteNoArvore(cliente.id, noId);
+   690→    setCliente({
+   691→      ...cliente,
+   692→      arvore: cliente.arvore.filter(n => n.id !== noId)
+   693→    });
+   694→  }
+   695→
+   696→  // Financial operations
+   697→  function adicionarDespesa() {
+   698→    if (!cliente) return;
+   699→    
+   700→    const valorNumerico = parseFloat(formDespesa.valor.replace(",", "."));
+   701→    if (isNaN(valorNumerico)) {
+   702→      alert("Valor inválido");
+   703→      return;
+   704→    }
+   705→    
+   706→    const novaDespesa = addDespesa(cliente.id, {
+   707→      descricao: formDespesa.descricao,
+   708→      valor: valorNumerico,
+   709→      moeda: formDespesa.moeda,
+   710→      data: new Date().toLocaleDateString("pt-BR"),
+   711→      categoria: formDespesa.categoria,
+   712→    });
+   713→    
+   714→    if (novaDespesa) {
+   715→      setCliente({
+   716→        ...cliente,
+   717→        financeiro: {
+   718→          ...cliente.financeiro,
+   719→          despesas: [...cliente.financeiro.despesas, novaDespesa]
+   720→        }
+   721→      });
+   722→    }
+   723→    
+   724→    setDialogDespesaAberto(false);
+   725→    setFormDespesa({ descricao: "", valor: "", moeda: "BRL", categoria: "outro" });
+   726→  }
+   727→
+   728→  function excluirDespesa(despesaId: string) {
+   729→    if (!cliente) return;
+   730→    
+   731→    deleteDespesa(cliente.id, despesaId);
+   732→    setCliente({
+   733→      ...cliente,
+   734→      financeiro: {
+   735→        ...cliente.financeiro,
+   736→        despesas: cliente.financeiro.despesas.filter(d => d.id !== despesaId)
+   737→      }
+   738→    });
+   739→  }
+   740→
+   741→  function alterarStatusPagamento(tipo: "taxaAnalise" | "taxaSucesso", status: "pago" | "pendente" | "aguardando") {
+   742→    if (!cliente) return;
+   743→    
+   744→    updateStatusPagamento(cliente.id, tipo, status);
+   745→    
+   746→    setCliente({
+   747→      ...cliente,
+   748→      financeiro: {
+   749→        ...cliente.financeiro,
+   750→        [tipo]: {
+   751→          ...cliente.financeiro[tipo],
+   752→          status
+   753→        }
+   754→      }
+   755→    });
+   756→  }
+   757→
+   758→  // Timeline operations
+   759→  function adicionarEntradaTimeline() {
+   760→    if (!cliente || !novaEntradaTitulo.trim()) return;
+   761→    
+   762→    const links = novoLink.trim() ? [novoLink.trim()] : undefined;
+   763→    
+   764→    const novaEntrada = addEntradaTimeline(cliente.id, {
+   765→      data: new Date().toLocaleDateString("pt-BR"),
+   766→      titulo: novaEntradaTitulo.trim(),
+   767→      descricao: novaEntradaDescricao.trim(),
+   768→      links,
+   769→    });
+   770→    
+   771→    if (novaEntrada) {
+   772→      setCliente({
+   773→        ...cliente,
+   774→        timeline: [novaEntrada, ...cliente.timeline]
+   775→      });
+   776→    }
+   777→    
+   778→    setNovaEntradaTitulo("");
+   779→    setNovaEntradaDescricao("");
+   780→    setNovoLink("");
+   781→  }
+   782→
+   783→  function excluirEntrada(entradaId: string) {
+   784→    if (!cliente) return;
+   785→    
+   786→    deleteEntradaTimeline(cliente.id, entradaId);
+   787→    setCliente({
+   788→      ...cliente,
+   789→      timeline: cliente.timeline.filter(e => e.id !== entradaId)
+   790→    });
+   791→  }
+   792→
+   793→  if (!cliente) {
+   794→    return (
+   795→      <div className="flex items-center justify-center h-64">
+   796→        <div className="size-8 border-3 border-navy/20 border-t-navy rounded-full animate-spin" />
+   797→      </div>
+   798→    );
+   799→  }
+   800→
+   801→  const lucroLiquido = calcularLucroLiquido(cliente);
+   802→
+   803→  return (
+   804→    <div className="space-y-6">
+   805→      {/* Header */}
+   806→      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+   807→        <div className="flex items-center gap-3">
+   808→          <Button
+   809→            variant="ghost"
+   810→            size="icon"
+   811→            onClick={() => router.push("/painel")}
+   812→            className="text-navy"
+   813→          >
+   814→            <ArrowLeft className="size-5" />
+   815→          </Button>
+   816→          
+   817→          <div>
+   818→            <h1 className="font-serif text-xl font-700 text-navy sm:text-2xl">
+   819→              {cliente.nome}
+   820→            </h1>
+   821→            <p className="text-sm text-muted-foreground">
+   822→              Cliente desde {cliente.dataEntrada} • ID: {cliente.id.slice(-6).toUpperCase()}
+   823→            </p>
+   824→          </div>
+   825→        </div>
+   826→
+   827→        <div className="flex items-center gap-2">
+   828→          {/* Status selector */}
+   829→          <Select value={cliente.status} onValueChange={(v) => handleStatusChange(v as StatusCliente)}>
+   830→            <SelectTrigger className="w-44 border-navy/20">
+   831→              <SelectValue />
+   832→            </SelectTrigger>
+   833→            <SelectContent>
+   834→              <SelectItem value="em_analise">Em Análise</SelectItem>
+   835→              <SelectItem value="pesquisa_europa">Pesquisa na Europa</SelectItem>
+   836→              <SelectItem value="aguardando_emissao">Aguardando Emissão</SelectItem>
+   837→              <SelectItem value="concluido">Concluído</SelectItem>
+   838→              <SelectItem value="cancelado">Cancelado</SelectItem>
+   839→            </SelectContent>
+   840→          </Select>
+   841→
+   842→          <Button
+   843→            onClick={handleSalvar}
+   844→            disabled={salvando}
+   845→            className="bg-navy hover:bg-navy-light text-white"
+   846→          >
+   847→            {salvando ? (
+   848→              <span className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+   849→            ) : (
+   850→              <Save className="size-4 mr-2" />
+   851→            )}
+   852→            Salvar
+   853→          </Button>
+   854→        </div>
+   855→      </div>
+   856→
+   857→      {/* Tabs */}
+   858→      <Tabs value={abaAtiva} onValueChange={setAbaAtiva}>
+   859→        <TabsList className="bg-navy/5 border border-border w-full justify-start overflow-x-auto">
+   860→          <TabsTrigger value="arvore" className="data-[state=active]:bg-navy data-[state=active]:text-white">
+   861→            <TreePine className="size-4 mr-2" />
+   862→            Árvore Genealógica
+   863→          </TabsTrigger>
+   864→          <TabsTrigger value="financeiro" className="data-[state=active]:bg-navy data-[state=active]:text-white">
+   865→            <DollarSign className="size-4 mr-2" />
+   866→            Financeiro
+   867→          </TabsTrigger>
+   868→          <TabsTrigger value="timeline" className="data-[state=active]:bg-navy data-[state=active]:text-white">
+   869→            <Clock className="size-4 mr-2" />
+   870→            Diário de Pesquisa
+   871→          </TabsTrigger>
+   872→        </TabsList>
+   873→
+   874→        {/* TAB 1: Árvore Genealógica */}
+   875→        <TabsContent value="arvore" className="mt-6 space-y-6">
+   876→          <div className="flex items-center justify-between">
+   877→            <div>
+   878→              <h2 className="font-serif text-lg font-600 text-navy">
+   879→                Linhagem Familiar & Documentos
+   880→              </h2>
+   881→              <p className="text-sm text-muted-foreground mt-1">
+   882→                Clique em qualquer nó da árvore para editar os dados. Adicione membros da família para mapear a linhagem completa.
+   883→              </p>
+   884→            </div>
+   885→            
+   886→            <Dialog open={dialogNovoNoAberto} onOpenChange={setDialogNovoNoAberto}>
+   887→              <DialogTrigger asChild>
+   888→                <Button variant="outline" className="border-navy/30 text-navy hover:bg-navy hover:text-white">
+   889→                  <Plus className="size-4 mr-2" />
+   890→                  Adicionar Membro
+   891→                </Button>
+   892→              </DialogTrigger>
+   893→              <DialogContent>
+   894→                <DialogHeader>
+   895→                  <DialogTitle className="font-serif text-navy">Adicionar Membro da Família</DialogTitle>
+   896→                  <DialogDescription>
+   897→                    Selecione o grau de parentesco do novo membro.
+   898→                  </DialogDescription>
+   899→                </DialogHeader>
+   900→                
+   901→                <div className="space-y-4 mt-4">
+   902→                  <div className="space-y-2">
+   903→                    <label className="text-sm font-medium text-navy">Grau de Parentesco *</label>
+   904→                    <Select value={novoNoRelacao} onValueChange={setNovoNoRelacao}>
+   905→                      <SelectTrigger>
+   906→                        <SelectValue />
+   907→                      </SelectTrigger>
+   908→                      <SelectContent>
+   909→                        <SelectItem value="pai">Pai</SelectItem>
+   910→                        <SelectItem value="mae">Mãe</SelectItem>
+   911→                        <SelectItem value="avo_paterno">Avô Paterno</SelectItem>
+   912→                        <SelectItem value="avo_paterna">Avó Paterna</SelectItem>
+   913→                        <SelectItem value="avo_materno">Avô Materno</SelectItem>
+   914→                        <SelectItem value="avo_materna">Avó Materna</SelectItem>
+   915→                        <SelectItem value="ancestral">Ancestral Europeu / Emigrante</SelectItem>
+   916→                      </SelectContent>
+   917→                    </Select>
+   918→                  </div>
+   919→
+   920→                  <div className="flex justify-end gap-2 pt-2">
+   921→                    <Button variant="outline" onClick={() => setDialogNovoNoAberto(false)}>
+   922→                      Cancelar
+   923→                    </Button>
+   924→                    <Button onClick={adicionarNovoNo} className="bg-navy hover:bg-navy-light text-white">
+   925→                      Adicionar
+   926→                    </Button>
+   927→                  </div>
+   928→                </div>
+   929→              </DialogContent>
+   930→            </Dialog>
+   931→          </div>
+   932→
+   933→          {/* Tree visualization - FamilySearch style */}
+   934→          <div className="bg-gradient-to-b from-navy/[0.02] to-transparent rounded-xl border border-navy/10 p-4 -m-4 min-h-[500px]">
+   935→            {cliente.arvore.length === 0 ? (
+   936→              <div className="flex flex-col items-center justify-center h-[400px]">
+   937→                <TreePine className="size-16 text-muted-foreground/30 mb-4" />
+   938→                <h3 className="font-serif text-lg font-600 text-navy mb-2">
+   939→                  Árvore Genealógica Vazia
+   940→                </h3>
+   941→                <p className="text-sm text-muted-foreground mb-4 text-center max-w-md">
+   942→                  Adicione o requerente e membros da família para começar a montar a árvore genealógica no estilo FamilySearch.
+   943→                </p>
+   944→                <Button onClick={() => setDialogNovoNoAberto(true)} className="bg-navy hover:bg-navy-light">
+   945→                  <Plus className="size-4 mr-2" />
+   946→                  Adicionar Primeiro Membro
+   947→                </Button>
+   948→              </div>
+   949→            ) : (
+   950→              <FamilyTree 
+   951→                nos={cliente.arvore} 
+   952→                onEdit={abrirEditarNo}
+   953→                onAdd={(relacao) => {
+   954→                  setNovoNoRelacao(relacao);
+   955→                  setDialogNovoNoAberto(true);
+   956→                }}
+   957→              />
+   958→            )}
+   959→          </div>
+   960→        </TabsContent>
+   961→
+   962→        {/* TAB 2: Financeiro */}
+   963→        <TabsContent value="financeiro" className="mt-6 space-y-6">
+   964→          <div>
+   965→            <h2 className="font-serif text-lg font-600 text-navy">
+   966→              Financeiro & Emolumentos Operacionais
+   967→            </h2>
+   968→            <p className="text-sm text-muted-foreground mt-1">
+   969→              Controle recebimentos, gastos operacionais e calcule o lucro líquido do caso.
+   970→            </p>
+   971→          </div>
+   972→
+   973→          <div className="grid gap-6 lg:grid-cols-2">
+   974→            {/* Recebimentos */}
+   975→            <Card className="border-green-200">
+   976→              <CardHeader className="pb-3">
+   977→                <CardTitle className="text-base font-600 text-green-800 flex items-center gap-2">
+   978→                  <DollarSign className="size-5" />
+   979→                  Resumo de Recebimentos
+   980→                </CardTitle>
+   981→              </CardHeader>
+   982→              <CardContent className="space-y-4">
+   983→                {/* Taxa de Análise */}
+   984→                <div className="flex items-center justify-between p-3 rounded-lg bg-green-50">
+   985→                  <div>
+   986→                    <p className="font-medium text-green-900">Taxa de Análise Inicial</p>
+   987→                    <p className="text-sm text-green-700">R$ {cliente.financeiro.taxaAnalise.valor.toFixed(2).replace(".", ",")}</p>
+   988→                  </div>
+   989→                  <Select 
+   990→                    value={cliente.financeiro.taxaAnalise.status} 
+   991→                    onValueChange={(v) => alterarStatusPagamento("taxaAnalise", v as "pago" | "pendente")}
+   992→                  >
+   993→                    <SelectTrigger className="w-28 border-green-300">
+   994→                      <SelectValue />
+   995→                    </SelectTrigger>
+   996→                    <SelectContent>
+   997→                      <SelectItem value="pendente">Pendente</SelectItem>
+   998→                      <SelectItem value="pago">Pago ✓</SelectItem>
+   999→                    </SelectContent>
+  1000→                  </Select>
+  1001→                </div>
+  1002→
+  1003→                {/* Taxa de Sucesso */}
+  1004→                <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50">
+  1005→                  <div>
+  1006→                    <p className="font-medium text-blue-900">Taxa de Sucesso</p>
+  1007→                    <p className="text-sm text-blue-700">R$ {cliente.financeiro.taxaSucesso.valor.toFixed(2).replace(".", ",")}</p>
+  1008→                  </div>
+  1009→                  <Select 
+  1010→                    value={cliente.financeiro.taxaSucesso.status} 
+  1011→                    onValueChange={(v) => alterarStatusPagamento("taxaSucesso", v as "pago" | "pendente" | "aguardando")}
+  1012→                  >
+  1013→                    <SelectTrigger className="w-32 border-blue-300">
+  1014→                      <SelectValue />
+  1015→                    </SelectTrigger>
+  1016→                    <SelectContent>
+  1017→                      <SelectItem value="aguardando">Aguardando</SelectItem>
+  1018→                      <SelectItem value="pendente">Pendente</SelectItem>
+  1019→                      <SelectItem value="pago">Pago ✓</SelectItem>
+  1020→                    </SelectContent>
+  1021→                  </Select>
+  1022→                </div>
+  1023→
+  1024→                {/* Lucro Líquido */}
+  1025→                <div className={`p-4 rounded-lg ${lucroLiquido >= 0 ? 'bg-green-100' : 'bg-red-100'}`}>
+  1026→                  <div className="flex items-center justify-between">
+  1027→                    <span className={`font-600 ${lucroLiquido >= 0 ? 'text-green-800' : 'text-red-800'}`}>
+  1028→                      💰 Lucro Líquido
+  1029→                    </span>
+  1030→                    <span className={`text-xl font-700 ${lucroLiquido >= 0 ? 'text-green-900' : 'text-red-900'}`}>
+  1031→                      R$ {lucroLiquido.toFixed(2).replace(".", ",")}
+  1032→                    </span>
+  1033→                  </div>
+  1034→                </div>
+  1035→              </CardContent>
+  1036→            </Card>
+  1037→
+  1038→            {/* Despesas */}
+  1039→            <Card className="border-orange-200">
+  1040→              <CardHeader className="pb-3">
+  1041→                <div className="flex items-center justify-between">
+  1042→                  <CardTitle className="text-base font-600 text-orange-800 flex items-center gap-2">
+  1043→                    <FileText className="size-5" />
+  1044→                    Emolumentos & Custos
+  1045→                  </CardTitle>
+  1046→                  
+  1047→                  <Dialog open={dialogDespesaAberto} onOpenChange={setDialogDespesaAberto}>
+  1048→                    <DialogTrigger asChild>
+  1049→                      <Button size="sm" variant="outline" className="border-orange-300 text-orange-700 hover:bg-orange-50">
+  1050→                        <Plus className="size-4 mr-1" />
+  1051→                        Nova Despesa
+  1052→                      </Button>
+  1053→                    </DialogTrigger>
+  1054→                    <DialogContent>
+  1055→                      <DialogHeader>
+  1056→                        <DialogTitle className="font-serif text-navy">Adicionar Despesa</DialogTitle>
+  1057→                        <DialogDescription>
+  1058→                          Registre um gasto operacional do caso.
+  1059→                        </DialogDescription>
+  1060→                      </DialogHeader>
+  1061→                      
+  1062→                      <div className="space-y-4 mt-4">
+  1063→                        <div className="space-y-2">
+  1064→                          <label className="text-sm font-medium text-navy">Descrição *</label>
+  1065→                          <Input
+  1066→                            placeholder="Ex: Taxa do Standesamt"
+  1067→                            value={formDespesa.descricao}
+  1068→                            onChange={(e) => setFormDespesa({...formDespesa, descricao: e.target.value})}
+  1069→                          />
+  1070→                        </div>
+  1071→                        
+  1072→                        <div className="grid grid-cols-2 gap-3">
+  1073→                          <div className="space-y-2">
+  1074→                            <label className="text-sm font-medium text-navy">Valor *</label>
+  1075→                            <Input
+  1076→                              placeholder="0,00"
+  1077→                              value={formDespesa.valor}
+  1078→                              onChange={(e) => setFormDespesa({...formDespesa, valor: e.target.value})}
+  1079→                            />
+  1080→                          </div>
+  1081→                          
+  1082→                          <div className="space-y-2">
+  1083→                            <label className="text-sm font-medium text-navy">Moeda</label>
+  1084→                            <Select value={formDespesa.moeda} onValueChange={(v) => setFormDespesa({...formDespesa, moeda: v as "BRL" | "EUR" | "USD"})}>
+  1085→                              <SelectTrigger>
+  1086→                                <SelectValue />
+  1087→                              </SelectTrigger>
+  1088→                              <SelectContent>
+  1089→                                <SelectItem value="BRL">R$ BRL</SelectItem>
+  1090→                                <SelectItem value="EUR">€ EUR</SelectItem>
+  1091→                                <SelectItem value="USD">$ USD</SelectItem>
+  1092→                              </SelectContent>
+  1093→                            </Select>
+  1094→                          </div>
+  1095→                        </div>
+  1096→                        
+  1097→                        <div className="space-y-2">
+  1098→                          <label className="text-sm font-medium text-navy">Categoria</label>
+  1099→                          <Select value={formDespesa.categoria} onValueChange={(v) => setFormDespesa({...formDespesa, categoria: v as Despesa["categoria"]})}>
+  1100→                            <SelectTrigger>
+  1101→                              <SelectValue />
+  1102→                            </SelectTrigger>
+  1103→                            <SelectContent>
+  1104→                              <SelectItem value="taxa_arquivo">Taxa de Arquivo</SelectItem>
+  1105→                              <SelectItem value="frete">Frete/Correio</SelectItem>
+  1106→                              <SelectItem value="cartorio_br">Cartório BR</SelectItem>
+  1107→                              <SelectItem value="traducao">Tradução</SelectItem>
+  1108→                              <SelectItem value="outro">Outro</SelectItem>
+  1109→                            </SelectContent>
+  1110→                          </Select>
+  1111→                        </div>
+  1112→
+  1113→                        <div className="flex justify-end gap-2 pt-2">
+  1114→                          <Button variant="outline" onClick={() => setDialogDespesaAberto(false)}>
+  1115→                            Cancelar
+  1116→                          </Button>
+  1117→                          <Button onClick={adicionarDespesa} className="bg-navy hover:bg-navy-light text-white">
+  1118→                            Adicionar
+  1119→                          </Button>
+  1120→                        </div>
+  1121→                      </div>
+  1122→                    </DialogContent>
+  1123→                  </Dialog>
+  1124→                </div>
+  1125→              </CardHeader>
+  1126→              <CardContent>
+  1127→                {cliente.financeiro.despesas.length === 0 ? (
+  1128→                  <p className="text-sm text-muted-foreground text-center py-4">
+  1129→                    Nenhuma despesa registrada.
+  1130→                  </p>
+  1131→                ) : (
+  1132→                  <div className="space-y-2 max-h-64 overflow-y-auto elegant-scroll">
+  1133→                    {cliente.financeiro.despesas.map((desp) => (
+  1134→                      <div key={desp.id} className="flex items-center justify-between p-2 rounded bg-orange-50/50 group">
+  1135→                        <div className="min-w-0 flex-1">
+  1136→                          <p className="text-sm font-medium text-orange-900 truncate">{desp.descricao}</p>
+  1137→                          <p className="text-xs text-orange-700">{desp.data} • {desp.categoria.replace("_", " ")}</p>
+  1138→                        </div>
+  1139→                        <div className="flex items-center gap-2">
+  1140→                          <span className="font-600 text-orange-800 whitespace-nowrap">
+  1141→                            {desp.moeda === "BRL" ? "R$" : desp.moeda === "EUR" ? "€" : "$"} {desp.valor.toFixed(2).replace(".", ",")}
+  1142→                          </span>
+  1143→                          <button
+  1144→                            onClick={() => excluirDespesa(desp.id)}
+  1145→                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded text-red-500 hover:bg-red-50"
+  1146→                          >
+  1147→                            <Trash2 className="size-3.5" />
+  1148→                          </button>
+  1149→                        </div>
+  1150→                      </div>
+  1151→                    ))}
+  1152→                    
+  1153→                    {/* Total despesas */}
+  1154→                    <div className="pt-2 mt-2 border-t border-orange-200 flex justify-between text-sm font-600 text-orange-900">
+  1155→                      <span>Total de Despesas:</span>
+  1156→                      <span>R$ {cliente.financeiro.despesas.reduce((s, d) => s + d.valor, 0).toFixed(2).replace(".", ",")}</span>
+  1157→                    </div>
+  1158→                  </div>
+  1159→                )}
+  1160→              </CardContent>
+  1161→            </Card>
+  1162→          </div>
+  1163→        </TabsContent>
+  1164→
+  1165→        {/* TAB 3: Timeline */}
+  1166→        <TabsContent value="timeline" className="mt-6 space-y-6">
+  1167→          <div>
+  1168→            <h2 className="font-serif text-lg font-600 text-navy">
+  1169→              Diário de Pesquisa
+  1170→            </h2>
+  1171→            <p className="text-sm text-muted-foreground mt-1">
+  1172→              Registre o progresso da investigação, comunicações com arquivos europeus e marcos importantes.
+  1173→            </p>
+  1174→          </div>
+  1175→
+  1176→          {/* Quick add entry */}
+  1177→          <Card className="border-navy/10">
+  1178→            <CardContent className="p-4 space-y-3">
+  1179→              <div className="grid gap-3 sm:grid-cols-2">
+  1180→                <Input
+  1181→                  placeholder="Título do evento (ex: E-mail enviado ao arquivo)"
+  1182→                  value={novaEntradaTitulo}
+  1183→                  onChange={(e) => setNovaEntradaTitulo(e.target.value)}
+  1184→                />
+  1185→                <Input
+  1186→                  placeholder="Link opcional (ex: Google Drive)"
+  1187→                  value={novoLink}
+  1188→                  onChange={(e) => setNovoLink(e.target.value)}
+  1189→                />
+  1190→              </div>
+  1191→              <textarea
+  1192→                placeholder="Descrição detalhada do progresso..."
+  1193→                value={novaEntradaDescricao}
+  1194→                onChange={(e) => setNovaEntradaDescricao(e.target.value)}
+  1195→                rows={2}
+  1196→                className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+  1197→              />
+  1198→              <div className="flex justify-end">
+  1199→                <Button
+  1200→                  onClick={adicionarEntradaTimeline}
+  1201→                  disabled={!novaEntradaTitulo.trim()}
+  1202→                  className="bg-navy hover:bg-navy-light text-white"
+  1203→                >
+  1204→                  <Plus className="size-4 mr-2" />
+  1205→                  Registrar Entrada
+  1206→                </Button>
+  1207→              </div>
+  1208→            </CardContent>
+  1209→          </Card>
+  1210→
+  1211→          {/* Timeline list */}
+  1212→          {cliente.timeline.length === 0 ? (
+  1213→            <Card className="border-dashed border-2">
+  1214→              <CardContent className="py-12 text-center">
+  1215→                <Clock className="size-12 mx-auto text-muted-foreground/30 mb-4" />
+  1216→                <h3 className="font-serif text-lg font-600 text-navy mb-2">
+  1217→                  Nenhum Registro Ainda
+  1218→                </h3>
+  1219→                <p className="text-sm text-muted-foreground">
+  1220→                  Comece a documentar o progresso da pesquisa adicionando entradas acima.
+  1221→                </p>
+  1222→              </CardContent>
+  1223→            </Card>
+  1224→          ) : (
+  1225→            <div className="space-y-3">
+  1226→              {cliente.timeline.map((entrada) => (
+  1227→                <Card key={entrada.id} className="border-navy/10 group relative">
+  1228→                  <CardContent className="p-4">
+  1229→                    <div className="flex items-start gap-3">
+  1230→                      {/* Timeline dot */}
+  1231→                      <div className="mt-1 size-3 rounded-full bg-navy shrink-0" />
+  1232→                      
+  1233→                      <div className="flex-1 min-w-0">
+  1234→                        <div className="flex items-start justify-between gap-2">
+  1235→                          <div>
+  1236→                            <div className="flex items-center gap-2 flex-wrap">
+  1237→                              <span className="text-xs font-500 text-gold-dark bg-gold/10 px-2 py-0.5 rounded">
+  1238→                                {entrada.data}
+  1239→                              </span>
+  1240→                              <h4 className="font-medium text-navy">{entrada.titulo}</h4>
+  1241→                            </div>
+  1242→                            
+  1243→                            {entrada.descricao && (
+  1244→                              <p className="mt-1 text-sm text-muted-foreground">
+  1245→                                {entrada.descricao}
+  1246→                              </p>
+  1247→                            )}
+  1248→                            
+  1249→                            {entrada.links && entrada.links.length > 0 && (
+  1250→                              <div className="mt-2 flex flex-wrap gap-2">
+  1251→                                {entrada.links.map((link, i) => (
+  1252→                                  <a
+  1253→                                    key={i}
+  1254→                                    href={link}
+  1255→                                    target="_blank"
+  1256→                                    rel="noopener noreferrer"
+  1257→                                    className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 underline"
+  1258→                                  >
+  1259→                                    <ExternalLink className="size-3" />
+  1260→                                    Abrir Link
+  1261→                                  </a>
+  1262→                                ))}
+  1263→                              </div>
+  1264→                            )}
+  1265→                          </div>
+  1266→                          
+  1267→                          <button
+  1268→                            onClick={() => excluirEntrada(entrada.id)}
+  1269→                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-md bg-red-50 text-red-500 hover:bg-red-100 shrink-0"
+  1270→                          >
+  1271→                            <Trash2 className="size-4" />
+  1272→                          </button>
+  1273→                        </div>
+  1274→                      </div>
+  1275→                    </div>
+  1276→                  </CardContent>
+  1277→                </Card>
+  1278→              ))}
+  1279→            </div>
+  1280→          )}
+  1281→        </TabsContent>
+  1282→      </Tabs>
+  1283→
+  1284→      {/* Edit Node Modal - With Expandable Registry Sections */}
+  1285→      <Dialog open={dialogNoAberto} onOpenChange={setDialogNoAberto}>
+  1286→        <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
+  1287→          <DialogHeader>
+  1288→            <DialogTitle className="font-serif text-navy flex items-center gap-2">
+  1289→              <User className="size-5" />
+  1290→              Editar Membro da Família
+  1291→            </DialogTitle>
+  1292→            <DialogDescription>
+  1293→              Atualize os dados pessoais e registros civis deste membro.
+  1294→            </DialogDescription>
+  1295→          </DialogHeader>
+  1296→          
+  1297→          <div className="space-y-4 mt-4">
+  1298→            {/* Nome Completo */}
+  1299→            <div className="space-y-2">
+  1300→              <label className="text-sm font-medium text-navy">Nome Completo *</label>
+  1301→              <Input
+  1302→                value={formNo.nomeCompleto || ""}
+  1303→                onChange={(e) => setFormNo({...formNo, nomeCompleto: e.target.value})}
+  1304→                placeholder="Nome completo do membro"
+  1305→              />
+  1306→            </div>
+  1307→
+  1308→            {/* Nascimento Section - Expandable */}
+  1309→            <div className={`border rounded-lg overflow-hidden transition-all ${formNo.nascimento?.data ? 'border-green-300 bg-green-50/30' : 'border-gray-200'}`}>
+  1310→              {/* Section Header / Toggle */}
+  1311→              <button
+  1312→                type="button"
+  1313→                onClick={() => {
+  1314→                  if (!formNo.nascimento?.data) {
+  1315→                    setFormNo({
+  1316→                      ...formNo,
+  1317→                      nascimento: { data: '', local: '', tipo: 'nascimento', completo: false }
+  1318→                    });
+  1319→                  } else {
+  1320→                    const { nascimento, ...rest } = formNo;
+  1321→                    setFormNo(rest);
+  1322→                  }
+  1323→                }}
+  1324→                className="w-full flex items-center justify-between p-3 hover:bg-green-50/50 transition-colors"
+  1325→              >
+  1326→                <div className="flex items-center gap-2">
+  1327→                  <CalendarDays className={`size-5 ${formNo.nascimento?.data ? 'text-green-600' : 'text-gray-400'}`} />
+  1328→                  <span className={`font-medium ${formNo.nascimento?.data ? 'text-green-800' : 'text-gray-600'}`}>
+  1329→                    Nascimento
+  1330→                  </span>
+  1331→                  {formNo.nascimento?.data && formNo.nascimento.completo && (
+  1332→                    <CheckCircle2 className="size-4 text-green-600" />
+  1333→                  )}
+  1334→                </div>
+  1335→                <span className={`text-xs px-2 py-1 rounded-full ${
+  1336→                  formNo.nascimento?.data 
+  1337→                    ? 'bg-green-100 text-green-700' 
+  1338→                    : 'bg-gray-100 text-gray-500'
+  1339→                }`}>
+  1340→                  {formNo.nascimento?.data ? 'Ativo' : '+ Adicionar'}
+  1341→                </span>
+  1342→              </button>
+  1343→
+  1344→              {/* Expanded Content */}
+  1345→              {formNo.nascimento && (
+  1346→                <div className="p-3 pt-0 space-y-3 border-t border-green-200/50 mt-1">
+  1347→                  <div className="grid grid-cols-2 gap-3 pt-3">
+  1348→                    <div className="space-y-1.5">
+  1349→                      <label className="text-xs font-medium text-green-800">Data</label>
+  1350→                      <Input
+  1351→                        placeholder="DD/MM/YYYY"
+  1352→                        value={formNo.nascimento.data || ""}
+  1353→                        onChange={(e) => {
+  1354→                          const newData = formatarData(e.target.value);
+  1355→                          const hasAllFields = newData && formNo.nascimento.local;
+  1356→                          setFormNo({
+  1357→                            ...formNo,
+  1358→                            nascimento: {...formNo.nascimento!, data: newData, completo: !!hasAllFields}
+  1359→                          });
+  1360→                        }}
+  1361→                        maxLength={10}
+  1362→                        className="border-green-200 focus:border-green-400"
+  1363→                      />
+  1364→                    </div>
+  1365→                    <div className="space-y-1.5">
+  1366→                      <label className="text-xs font-medium text-green-800">Local</label>
+  1367→                      <Input
+  1368→                        placeholder="Cidade, País"
+  1369→                        value={formNo.nascimento.local || ""}
+  1370→                        onChange={(e) => {
+  1371→                          const hasAllFields = formNo.nascimento.data && e.target.value;
+  1372→                          setFormNo({
+  1373→                            ...formNo,
+  1374→                            nascimento: {...formNo.nascimento!, local: e.target.value, completo: !!hasAllFields}
+  1375→                          });
+  1376→                        }}
+  1377→                        className="border-green-200 focus:border-green-400"
+  1378→                      />
+  1379→                    </div>
+  1380→                  </div>
+  1381→
+  1382→                  {/* Civil Registry Fields - with OCR Paste Zone */}
+  1383→                  {(formNo.nascimento.data) && (
+  1384→                    <div className="pt-2 space-y-3 bg-white rounded-md p-3 border border-green-200/50">
+  1385→                      <div className="flex items-center justify-between">
+  1386→                        <p className="text-[10px] font-semibold uppercase tracking-wide text-green-700 flex items-center gap-1">
+  1387→                          <FileText className="size-3" /> Dados do Registro Civil
+  1388→                        </p>
+  1389→                      </div>
+  1390→                      
+  1391→                      {/* Zona de Colar Matrícula */}
+  1392→                      <MatriculaPasteZone 
+  1393→                        tipoRegistro="nascimento"
+  1394→                        isActive={zonaColarAtiva === 'nascimento'}
+  1395→                        onActivate={() => setZonaColarAtiva('nascimento')}
+  1396→                        onDadosExtraidos={(dados) => {
+  1397→                          console.log('Dados extraídos Nascimento:', dados);
+  1398→                          
+  1399→                          // Atualizar formNo com os dados extraídos
+  1400→                          const novoRegistroCivil = {
+  1401→                            ...(formNo.nascimento.registroCivil || {}),
+  1402→                            cartorio: dados.cartorio || formNo.nascimento.registroCivil?.cartorio || '',
+  1403→                            livro: dados.livro || formNo.nascimento.registroCivil?.livro || '',
+  1404→                            folha: dados.folha || formNo.nascimento.registroCivil?.folha || '',
+  1405→                            termo: dados.termo || formNo.nascimento.registroCivil?.termo || '',
+  1406→                          };
+  1407→                          
+  1408→                          // Verificar se está completo
+  1409→                          const temTodosCampos = novoRegistroCivil.cartorio || novoRegistroCivil.livro || novoRegistroCivil.folha || novoRegistroCivil.termo;
+  1410→                          
+  1411→                          setFormNo({
+  1412→                            ...formNo,
+  1413→                            nascimento: {
+  1414→                              ...formNo.nascimento!,
+  1415→                              local: dados.municipio ? `${dados.municipio}${dados.uf ? '/' + dados.uf : ''}` : formNo.nascimento.local,
+  1416→                              registroCivil: novoRegistroCivil,
+  1417→                              completo: !!(formNo.nascimento.data && temTodosCampos)
+  1418→                            }
+  1419→                          });
+  1420→                        }}
+  1421→                      />
+  1422→                      
+  1423→                      <div className="grid grid-cols-2 gap-2">
+  1424→                        <div className="space-y-1">
+  1425→                          <label className="text-[10px] text-muted-foreground">Cartório</label>
+  1426→                          <Input
+  1427→                            placeholder="Nome do cartório"
+  1428→                            value={formNo.nascimento.registroCivil?.cartorio || ''}
+  1429→                            onChange={(e) => setFormNo({
+  1430→                              ...formNo,
+  1431→                              nascimento: {
+  1432→                                ...formNo.nascimento!,
+  1433→                                registroCivil: {...(formNo.nascimento.registroCivil || {}), cartorio: e.target.value}
+  1434→                              }
+  1435→                            })}
+  1436→                            className="h-8 text-xs"
+  1437→                          />
+  1438→                        </div>
+  1439→                        <div className="space-y-1">
+  1440→                          <label className="text-[10px] text-muted-foreground">Livro</label>
+  1441→                          <Input
+  1442→                            placeholder="Nº do livro"
+  1443→                            value={formNo.nascimento.registroCivil?.livro || ''}
+  1444→                            onChange={(e) => setFormNo({
+  1445→                              ...formNo,
+  1446→                              nascimento: {
+  1447→                                ...formNo.nascimento!,
+  1448→                                registroCivil: {...(formNo.nascimento.registroCivil || {}), livro: e.target.value}
+  1449→                              }
+  1450→                            })}
+  1451→                            className="h-8 text-xs"
+  1452→                          />
+  1453→                        </div>
+  1454→                        <div className="space-y-1">
+  1455→                          <label className="text-[10px] text-muted-foreground">Folha</label>
+  1456→                          <Input
+  1457→                            placeholder="Nº da folha"
+  1458→                            value={formNo.nascimento.registroCivil?.folha || ''}
+  1459→                            onChange={(e) => setFormNo({
+  1460→                              ...formNo,
+  1461→                              nascimento: {
+  1462→                                ...formNo.nascimento!,
+  1463→                                registroCivil: {...(formNo.nascimento.registroCivil || {}), folha: e.target.value}
+  1464→                              }
+  1465→                            })}
+  1466→                            className="h-8 text-xs"
+  1467→                          />
+  1468→                        </div>
+  1469→                        <div className="space-y-1">
+  1470→                          <label className="text-[10px] text-muted-foreground">Termo</label>
+  1471→                          <Input
+  1472→                            placeholder="Nº do termo"
+  1473→                            value={formNo.nascimento.registroCivil?.termo || ''}
+  1474→                            onChange={(e) => setFormNo({
+  1475→                              ...formNo,
+  1476→                              nascimento: {
+  1477→                                ...formNo.nascimento!,
+  1478→                                registroCivil: {...(formNo.nascimento.registroCivil || {}), termo: e.target.value}
+  1479→                              }
+  1480→                            })}
+  1481→                            className="h-8 text-xs"
+  1482→                          />
+  1483→                        </div>
+  1484→                      </div>
+  1485→                    </div>
+  1486→                  )}
+  1487→                </div>
+  1488→              )}
+  1489→            </div>
+  1490→
+  1491→            {/* Casamento Section - Expandable */}
+  1492→            <div className={`border rounded-lg overflow-hidden transition-all ${formNo.casamento?.data ? 'border-pink-300 bg-pink-50/30' : 'border-gray-200'}`}>
+  1493→              <button
+  1494→                type="button"
+  1495→                onClick={() => {
+  1496→                  if (!formNo.casamento?.data) {
+  1497→                    setFormNo({
+  1498→                      ...formNo,
+  1499→                      casamento: { data: '', local: '', tipo: 'casamento', completo: false }
+  1500→                    });
+  1501→                  } else {
+  1502→                    const { casamento, ...rest } = formNo;
+  1503→                    setFormNo(rest);
+  1504→                  }
+  1505→                }}
+  1506→                className="w-full flex items-center justify-between p-3 hover:bg-pink-50/50 transition-colors"
+  1507→              >
+  1508→                <div className="flex items-center gap-2">
+  1509→                  <FileText className={`size-5 ${formNo.casamento?.data ? 'text-pink-600' : 'text-gray-400'}`} />
+  1510→                  <span className={`font-medium ${formNo.casamento?.data ? 'text-pink-800' : 'text-gray-600'}`}>
+  1511→                    Casamento
+  1512→                  </span>
+  1513→                  {formNo.casamento?.data && formNo.casamento.completo && (
+  1514→                    <CheckCircle2 className="size-4 text-pink-600" />
+  1515→                  )}
+  1516→                </div>
+  1517→                <span className={`text-xs px-2 py-1 rounded-full ${
+  1518→                  formNo.casamento?.data 
+  1519→                    ? 'bg-pink-100 text-pink-700' 
+  1520→                    : 'bg-gray-100 text-gray-500'
+  1521→                }`}>
+  1522→                  {formNo.casamento?.data ? 'Ativo' : '+ Adicionar'}
+  1523→                </span>
+  1524→              </button>
+  1525→
+  1526→              {formNo.casamento && (
+  1527→                <div className="p-3 pt-0 space-y-3 border-t border-pink-200/50 mt-1">
+  1528→                  <div className="grid grid-cols-2 gap-3 pt-3">
+  1529→                    <div className="space-y-1.5">
+  1530→                      <label className="text-xs font-medium text-pink-800">Data</label>
+  1531→                      <Input
+  1532→                        placeholder="DD/MM/YYYY"
+  1533→                        value={formNo.casamento.data || ""}
+  1534→                        onChange={(e) => {
+  1535→                          const newData = formatarData(e.target.value);
+  1536→                          const rc = formNo.casamento.registroCivil;
+  1537→                          const hasRegistry = rc?.cartorio || rc?.livro || rc?.folha || rc?.termo;
+  1538→                          setFormNo({
+  1539→                            ...formNo,
+  1540→                            casamento: {...formNo.casamento!, data: newData, completo: !!(newData && hasRegistry)}
+  1541→                          });
+  1542→                        }}
+  1543→                        maxLength={10}
+  1544→                        className="border-pink-200 focus:border-pink-400"
+  1545→                      />
+  1546→                    </div>
+  1547→                    <div className="space-y-1.5">
+  1548→                      <label className="text-xs font-medium text-pink-800">Local</label>
+  1549→                      <Input
+  1550→                        placeholder="Cidade, País"
+  1551→                        value={formNo.casamento.local || ""}
+  1552→                        onChange={(e) => setFormNo({...formNo, casamento: {...formNo.casamento!, local: e.target.value}})}
+  1553→                        className="border-pink-200 focus:border-pink-400"
+  1554→                      />
+  1555→                    </div>
+  1556→                  </div>
+  1557→
+  1558→                  {/* Civil Registry Fields for Marriage - with OCR */}
+  1559→                  {formNo.casamento.data && (
+  1560→                    <div className="pt-2 space-y-3 bg-white rounded-md p-3 border border-pink-200/50">
+  1561→                      <div className="flex items-center justify-between">
+  1562→                        <p className="text-[10px] font-semibold uppercase tracking-wide text-pink-700 flex items-center gap-1">
+  1563→                          <FileText className="size-3" /> Dados do Registro Civil
+  1564→                        </p>
+  1565→                      </div>
+  1566→                      
+  1567→                      {/* Zona de Colar Matrícula */}
+  1568→                      <MatriculaPasteZone 
+  1569→                        tipoRegistro="casamento"
+  1570→                        isActive={zonaColarAtiva === 'casamento'}
+  1571→                        onActivate={() => setZonaColarAtiva('casamento')}
+  1572→                        onDadosExtraidos={(dados) => {
+  1573→                          console.log('Dados extraídos Casamento:', dados);
+  1574→                          
+  1575→                          const novoRegistroCivil = {
+  1576→                            ...(formNo.casamento.registroCivil || {}),
+  1577→                            cartorio: dados.cartorio || formNo.casamento.registroCivil?.cartorio || '',
+  1578→                            livro: dados.livro || formNo.casamento.registroCivil?.livro || '',
+  1579→                            folha: dados.folha || formNo.casamento.registroCivil?.folha || '',
+  1580→                            termo: dados.termo || formNo.casamento.registroCivil?.termo || '',
+  1581→                          };
+  1582→                          
+  1583→                          const temTodosCampos = novoRegistroCivil.cartorio || novoRegistroCivil.livro || novoRegistroCivil.folha || novoRegistroCivil.termo;
+  1584→                          
+  1585→                          setFormNo({
+  1586→                            ...formNo,
+  1587→                            casamento: {
+  1588→                              ...formNo.casamento!,
+  1589→                              local: dados.municipio ? `${dados.municipio}${dados.uf ? '/' + dados.uf : ''}` : formNo.casamento.local,
+  1590→                              registroCivil: novoRegistroCivil,
+  1591→                              completo: !!(formNo.casamento.data && temTodosCampos)
+  1592→                            }
+  1593→                          });
+  1594→                        }}
+  1595→                      />
+  1596→                      
+  1597→                      <div className="grid grid-cols-2 gap-2">
+  1598→                        <div className="space-y-1">
+  1599→                          <label className="text-[10px] text-muted-foreground">Cartório</label>
+  1600→                          <Input
+  1601→                            placeholder="Nome do cartório"
+  1602→                            value={formNo.casamento.registroCivil?.cartorio || ''}
+  1603→                            onChange={(e) => {
+  1604→                              const newRc = {...(formNo.casamento.registroCivil || {}), cartorio: e.target.value};
+  1605→                              const hasAnyField = Object.values(newRc).some(v => v);
+  1606→                              setFormNo({
+  1607→                                ...formNo,
+  1608→                                casamento: {
+  1609→                                  ...formNo.casamento!,
+  1610→                                  registroCivil: newRc,
+  1611→                                  completo: !!(formNo.casamento.data && hasAnyField)
+  1612→                                }
+  1613→                              });
+  1614→                            }}
+  1615→                            className="h-8 text-xs"
+  1616→                          />
+  1617→                        </div>
+  1618→                        <div className="space-y-1">
+  1619→                          <label className="text-[10px] text-muted-foreground">Livro</label>
+  1620→                          <Input
+  1621→                            placeholder="Nº do livro"
+  1622→                            value={formNo.casamento.registroCivil?.livro || ''}
+  1623→                            onChange={(e) => {
+  1624→                              const newRc = {...(formNo.casamento.registroCivil || {}), livro: e.target.value};
+  1625→                              const hasAnyField = Object.values(newRc).some(v => v);
+  1626→                              setFormNo({
+  1627→                                ...formNo,
+  1628→                                casamento: {
+  1629→                                  ...formNo.casamento!,
+  1630→                                  registroCivil: newRc,
+  1631→                                  completo: !!(formNo.casamento.data && hasAnyField)
+  1632→                                }
+  1633→                              });
+  1634→                            }}
+  1635→                            className="h-8 text-xs"
+  1636→                          />
+  1637→                        </div>
+  1638→                        <div className="space-y-1">
+  1639→                          <label className="text-[10px] text-muted-foreground">Folha</label>
+  1640→                          <Input
+  1641→                            placeholder="Nº da folha"
+  1642→                            value={formNo.casamento.registroCivil?.folha || ''}
+  1643→                            onChange={(e) => {
+  1644→                              const newRc = {...(formNo.casamento.registroCivil || {}), folha: e.target.value};
+  1645→                              const hasAnyField = Object.values(newRc).some(v => v);
+  1646→                              setFormNo({
+  1647→                                ...formNo,
+  1648→                                casamento: {
+  1649→                                  ...formNo.casamento!,
+  1650→                                  registroCivil: newRc,
+  1651→                                  completo: !!(formNo.casamento.data && hasAnyField)
+  1652→                                }
+  1653→                              });
+  1654→                            }}
+  1655→                            className="h-8 text-xs"
+  1656→                          />
+  1657→                        </div>
+  1658→                        <div className="space-y-1">
+  1659→                          <label className="text-[10px] text-muted-foreground">Termo</label>
+  1660→                          <Input
+  1661→                            placeholder="Nº do termo"
+  1662→                            value={formNo.casamento.registroCivil?.termo || ''}
+  1663→                            onChange={(e) => {
+  1664→                              const newRc = {...(formNo.casamento.registroCivil || {}), termo: e.target.value};
+  1665→                              const hasAnyField = Object.values(newRc).some(v => v);
+  1666→                              setFormNo({
+  1667→                                ...formNo,
+  1668→                                casamento: {
+  1669→                                  ...formNo.casamento!,
+  1670→                                  registroCivil: newRc,
+  1671→                                  completo: !!(formNo.casamento.data && hasAnyField)
+  1672→                                }
+  1673→                              });
+  1674→                            }}
+  1675→                            className="h-8 text-xs"
+  1676→                          />
+  1677→                        </div>
+  1678→                      </div>
+  1679→                    </div>
+  1680→                  )}
+  1681→                </div>
+  1682→              )}
+  1683→            </div>
+  1684→
+  1685→            {/* Óbito Section - Expandable */}
+  1686→            <div className={`border rounded-lg overflow-hidden transition-all ${formNo.obito?.data ? 'border-gray-400 bg-gray-50/50' : 'border-gray-200'}`}>
+  1687→              <button
+  1688→                type="button"
+  1689→                onClick={() => {
+  1690→                  if (!formNo.obito?.data) {
+  1691→                    setFormNo({
+  1692→                      ...formNo,
+  1693→                      obito: { data: '', local: '', tipo: 'obito', completo: false }
+  1694→                    });
+  1695→                  } else {
+  1696→                    const { obito, ...rest } = formNo;
+  1697→                    setFormNo(rest);
+  1698→                  }
+  1699→                }}
+  1700→                className="w-full flex items-center justify-between p-3 hover:bg-gray-50 transition-colors"
+  1701→              >
+  1702→                <div className="flex items-center gap-2">
+  1703→                  <AlertCircle className={`size-5 ${formNo.obito?.data ? 'text-gray-600' : 'text-gray-400'}`} />
+  1704→                  <span className={`font-medium ${formNo.obito?.data ? 'text-gray-800' : 'text-gray-600'}`}>
+  1705→                    Óbito
+  1706→                  </span>
+  1707→                  {formNo.obito?.data && formNo.obito.completo && (
+  1708→                    <CheckCircle2 className="size-4 text-gray-600" />
+  1709→                  )}
+  1710→                </div>
+  1711→                <span className={`text-xs px-2 py-1 rounded-full ${
+  1712→                  formNo.obito?.data 
+  1713→                    ? 'bg-gray-200 text-gray-700' 
+  1714→                    : 'bg-gray-100 text-gray-500'
+  1715→                }`}>
+  1716→                  {formNo.obito?.data ? 'Ativo' : '+ Adicionar'}
+  1717→                </span>
+  1718→              </button>
+  1719→
+  1720→              {formNo.obito && (
+  1721→                <div className="p-3 pt-0 space-y-3 border-t border-gray-300/50 mt-1">
+  1722→                  <div className="grid grid-cols-2 gap-3 pt-3">
+  1723→                    <div className="space-y-1.5">
+  1724→                      <label className="text-xs font-medium text-gray-800">Data</label>
+  1725→                      <Input
+  1726→                        placeholder="DD/MM/YYYY"
+  1727→                        value={formNo.obito.data || ""}
+  1728→                        onChange={(e) => {
+  1729→                          const newData = formatarData(e.target.value);
+  1730→                          const rc = formNo.obito.registroCivil;
+  1731→                          const hasRegistry = rc?.cartorio || rc?.livro || rc?.folha || rc?.termo;
+  1732→                          setFormNo({
+  1733→                            ...formNo,
+  1734→                            obito: {...formNo.obito!, data: newData, completo: !!(newData && hasRegistry)}
+  1735→                          });
+  1736→                        }}
+  1737→                        maxLength={10}
+  1738→                        className="border-gray-300 focus:border-gray-500"
+  1739→                      />
+  1740→                    </div>
+  1741→                    <div className="space-y-1.5">
+  1742→                      <label className="text-xs font-medium text-gray-800">Local</label>
+  1743→                      <Input
+  1744→                        placeholder="Cidade, País"
+  1745→                        value={formNo.obito.local || ""}
+  1746→                        onChange={(e) => setFormNo({...formNo, obito: {...formNo.obito!, local: e.target.value}})}
+  1747→                        className="border-gray-300 focus:border-gray-500"
+  1748→                      />
+  1749→                    </div>
+  1750→                  </div>
+  1751→
+  1752→                  {/* Civil Registry Fields for Death - with OCR */}
+  1753→                  {formNo.obito.data && (
+  1754→                    <div className="pt-2 space-y-3 bg-white rounded-md p-3 border border-gray-300/50">
+  1755→                      <div className="flex items-center justify-between">
+  1756→                        <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-700 flex items-center gap-1">
+  1757→                          <FileText className="size-3" /> Dados do Registro Civil
+  1758→                        </p>
+  1759→                      </div>
+  1760→                      
+  1761→                      {/* Zona de Colar Matrícula */}
+  1762→                      <MatriculaPasteZone 
+  1763→                        tipoRegistro="obito"
+  1764→                        isActive={zonaColarAtiva === 'obito'}
+  1765→                        onActivate={() => setZonaColarAtiva('obito')}
+  1766→                        onDadosExtraidos={(dados) => {
+  1767→                          console.log('Dados extraídos Óbito:', dados);
+  1768→                          
+  1769→                          const novoRegistroCivil = {
+  1770→                            ...(formNo.obito.registroCivil || {}),
+  1771→                            cartorio: dados.cartorio || formNo.obito.registroCivil?.cartorio || '',
+  1772→                            livro: dados.livro || formNo.obito.registroCivil?.livro || '',
+  1773→                            folha: dados.folha || formNo.obito.registroCivil?.folha || '',
+  1774→                            termo: dados.termo || formNo.obito.registroCivil?.termo || '',
+  1775→                          };
+  1776→                          
+  1777→                          const temTodosCampos = novoRegistroCivil.cartorio || novoRegistroCivil.livro || novoRegistroCivil.folha || novoRegistroCivil.termo;
+  1778→                          
+  1779→                          setFormNo({
+  1780→                            ...formNo,
+  1781→                            obito: {
+  1782→                              ...formNo.obito!,
+  1783→                              local: dados.municipio ? `${dados.municipio}${dados.uf ? '/' + dados.uf : ''}` : formNo.obito.local,
+  1784→                              registroCivil: novoRegistroCivil,
+  1785→                              completo: !!(formNo.obito.data && temTodosCampos)
+  1786→                            }
+  1787→                          });
+  1788→                        }}
+  1789→                      />
+  1790→                      
+  1791→                      <div className="grid grid-cols-2 gap-2">
+  1792→                        <div className="space-y-1">
+  1793→                          <label className="text-[10px] text-muted-foreground">Cartório</label>
+  1794→                          <Input
+  1795→                            placeholder="Nome do cartório"
+  1796→                            value={formNo.obito.registroCivil?.cartorio || ''}
+  1797→                            onChange={(e) => {
+  1798→                              const newRc = {...(formNo.obito.registroCivil || {}), cartorio: e.target.value};
+  1799→                              const hasAnyField = Object.values(newRc).some(v => v);
+  1800→                              setFormNo({
+  1801→                                ...formNo,
+  1802→                                obito: {
+  1803→                                  ...formNo.obito!,
+  1804→                                  registroCivil: newRc,
+  1805→                                  completo: !!(formNo.obito.data && hasAnyField)
+  1806→                                }
+  1807→                              });
+  1808→                            }}
+  1809→                            className="h-8 text-xs"
+  1810→                          />
+  1811→                        </div>
+  1812→                        <div className="space-y-1">
+  1813→                          <label className="text-[10px] text-muted-foreground">Livro</label>
+  1814→                          <Input
+  1815→                            placeholder="Nº do livro"
+  1816→                            value={formNo.obito.registroCivil?.livro || ''}
+  1817→                            onChange={(e) => {
+  1818→                              const newRc = {...(formNo.obito.registroCivil || {}), livro: e.target.value};
+  1819→                              const hasAnyField = Object.values(newRc).some(v => v);
+  1820→                              setFormNo({
+  1821→                                ...formNo,
+  1822→                                obito: {
+  1823→                                  ...formNo.obito!,
+  1824→                                  registroCivil: newRc,
+  1825→                                  completo: !!(formNo.obito.data && hasAnyField)
+  1826→                                }
+  1827→                              });
+  1828→                            }}
+  1829→                            className="h-8 text-xs"
+  1830→                          />
+  1831→                        </div>
+  1832→                        <div className="space-y-1">
+  1833→                          <label className="text-[10px] text-muted-foreground">Folha</label>
+  1834→                          <Input
+  1835→                            placeholder="Nº da folha"
+  1836→                            value={formNo.obito.registroCivil?.folha || ''}
+  1837→                            onChange={(e) => {
+  1838→                              const newRc = {...(formNo.obito.registroCivil || {}), folha: e.target.value};
+  1839→                              const hasAnyField = Object.values(newRc).some(v => v);
+  1840→                              setFormNo({
+  1841→                                ...formNo,
+  1842→                                obito: {
+  1843→                                  ...formNo.obito!,
+  1844→                                  registroCivil: newRc,
+  1845→                                  completo: !!(formNo.obito.data && hasAnyField)
+  1846→                                }
+  1847→                              });
+  1848→                            }}
+  1849→                            className="h-8 text-xs"
+  1850→                          />
+  1851→                        </div>
+  1852→                        <div className="space-y-1">
+  1853→                          <label className="text-[10px] text-muted-foreground">Termo</label>
+  1854→                          <Input
+  1855→                            placeholder="Nº do termo"
+  1856→                            value={formNo.obito.registroCivil?.termo || ''}
+  1857→                            onChange={(e) => {
+  1858→                              const newRc = {...(formNo.obito.registroCivil || {}), termo: e.target.value};
+  1859→                              const hasAnyField = Object.values(newRc).some(v => v);
+  1860→                              setFormNo({
+  1861→                                ...formNo,
+  1862→                                obito: {
+  1863→                                  ...formNo.obito!,
+  1864→                                  registroCivil: newRc,
+  1865→                                  completo: !!(formNo.obito.data && hasAnyField)
+  1866→                                }
+  1867→                              });
+  1868→                            }}
+  1869→                            className="h-8 text-xs"
+  1870→                          />
+  1871→                        </div>
+  1872→                      </div>
+  1873→                    </div>
+  1874→                  )}
+  1875→                </div>
+  1876→              )}
+  1877→            </div>
+  1878→
+  1879→            {/* Status do Registro */}
+  1880→            <div className="space-y-2">
+  1881→              <label className="text-sm font-medium text-navy">Status do Registro</label>
+  1882→              <Select 
+  1883→                value={formNo.statusRegistro || "pendente"} 
+  1884→                onValueChange={(v) => setFormNo({...formNo, statusRegistro: v as NoArvore["statusRegistro"]})}
+  1885→              >
+  1886→                <SelectTrigger>
+  1887→                  <SelectValue />
+  1888→                </SelectTrigger>
+  1889→                <SelectContent>
+  1890→                  <SelectItem value="localizado">✓ Localizado</SelectItem>
+  1891→                  <SelectItem value="pendente">⏳ Pendente</SelectItem>
+  1892→                  <SelectItem value="em_busca">🔍 Em Busca na Europa</SelectItem>
+  1893→                  <SelectItem value="nao_existe">✗ Não Existe</SelectItem>
+  1894→                </SelectContent>
+  1895→              </Select>
+  1896→            </div>
+  1897→
+  1898→            {/* Variações de Grafia */}
+  1899→            <div className="space-y-2">
+  1900→              <label className="text-sm font-medium text-navy">Variações de Grafia do Nome</label>
+  1901→              <Input
+  1902→                placeholder="Ex: Müller, Mueller, Muller"
+  1903→                value={formNo.variacoesGrafia || ""}
+  1904→                onChange={(e) => setFormNo({...formNo, variacoesGrafia: e.target.value})}
+  1905→              />
+  1906→            </div>
+  1907→
+  1908→            {/* Anotações de Cartório */}
+  1909→            <div className="space-y-2">
+  1910→              <label className="text-sm font-medium text-navy">Anotações de Cartório</label>
+  1911→              <textarea
+  1912→                placeholder="Observações sobre registros, livros, paróquias..."
+  1913→                value={formNo.anotacoesCartorio || ""}
+  1914→                onChange={(e) => setFormNo({...formNo, anotacoesCartorio: e.target.value})}
+  1915→                rows={3}
+  1916→                className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+  1917→              />
+  1918→            </div>
+  1919→
+  1920→            {/* Action Buttons */}
+  1921→            <div className="flex justify-end gap-2 pt-4 border-t">
+  1922→              <Button variant="outline" onClick={() => {
+  1923→                setDialogNoAberto(false);
+  1924→                setZonaColarAtiva(null);  // Limpar zona ativa ao fechar
+  1925→              }}>
+  1926→                Cancelar
+  1927→              </Button>
+  1928→              <Button onClick={salvarNo} className="bg-navy hover:bg-navy-light text-white">
+  1929→                <Check className="size-4 mr-2" />
+  1930→                Salvar Alterações
+  1931→              </Button>
+  1932→            </div>
+  1933→          </div>
+  1934→        </DialogContent>
+  1935→      </Dialog>
+  1936→    </div>
+  1937→  );
+  1938→}
+  1939→

@@ -1,0 +1,502 @@
+  1001→  1001→                </div>
+  1002→  1002→
+  1003→  1003→                {/* Taxa de Sucesso */}
+  1004→  1004→                <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50">
+  1005→  1005→                  <div>
+  1006→  1006→                    <p className="font-medium text-blue-900">Taxa de Sucesso</p>
+  1007→  1007→                    <p className="text-sm text-blue-700">R$ {cliente.financeiro.taxaSucesso.valor.toFixed(2).replace(".", ",")}</p>
+  1008→  1008→                  </div>
+  1009→  1009→                  <Select 
+  1010→  1010→                    value={cliente.financeiro.taxaSucesso.status} 
+  1011→  1011→                    onValueChange={(v) => alterarStatusPagamento("taxaSucesso", v as "pago" | "pendente" | "aguardando")}
+  1012→  1012→                  >
+  1013→  1013→                    <SelectTrigger className="w-32 border-blue-300">
+  1014→  1014→                      <SelectValue />
+  1015→  1015→                    </SelectTrigger>
+  1016→  1016→                    <SelectContent>
+  1017→  1017→                      <SelectItem value="aguardando">Aguardando</SelectItem>
+  1018→  1018→                      <SelectItem value="pendente">Pendente</SelectItem>
+  1019→  1019→                      <SelectItem value="pago">Pago ✓</SelectItem>
+  1020→  1020→                    </SelectContent>
+  1021→  1021→                  </Select>
+  1022→  1022→                </div>
+  1023→  1023→
+  1024→  1024→                {/* Lucro Líquido */}
+  1025→  1025→                <div className={`p-4 rounded-lg ${lucroLiquido >= 0 ? 'bg-green-100' : 'bg-red-100'}`}>
+  1026→  1026→                  <div className="flex items-center justify-between">
+  1027→  1027→                    <span className={`font-600 ${lucroLiquido >= 0 ? 'text-green-800' : 'text-red-800'}`}>
+  1028→  1028→                      💰 Lucro Líquido
+  1029→  1029→                    </span>
+  1030→  1030→                    <span className={`text-xl font-700 ${lucroLiquido >= 0 ? 'text-green-900' : 'text-red-900'}`}>
+  1031→  1031→                      R$ {lucroLiquido.toFixed(2).replace(".", ",")}
+  1032→  1032→                    </span>
+  1033→  1033→                  </div>
+  1034→  1034→                </div>
+  1035→  1035→              </CardContent>
+  1036→  1036→            </Card>
+  1037→  1037→
+  1038→  1038→            {/* Despesas */}
+  1039→  1039→            <Card className="border-orange-200">
+  1040→  1040→              <CardHeader className="pb-3">
+  1041→  1041→                <div className="flex items-center justify-between">
+  1042→  1042→                  <CardTitle className="text-base font-600 text-orange-800 flex items-center gap-2">
+  1043→  1043→                    <FileText className="size-5" />
+  1044→  1044→                    Emolumentos & Custos
+  1045→  1045→                  </CardTitle>
+  1046→  1046→                  
+  1047→  1047→                  <Dialog open={dialogDespesaAberto} onOpenChange={setDialogDespesaAberto}>
+  1048→  1048→                    <DialogTrigger asChild>
+  1049→  1049→                      <Button size="sm" variant="outline" className="border-orange-300 text-orange-700 hover:bg-orange-50">
+  1050→  1050→                        <Plus className="size-4 mr-1" />
+  1051→  1051→                        Nova Despesa
+  1052→  1052→                      </Button>
+  1053→  1053→                    </DialogTrigger>
+  1054→  1054→                    <DialogContent>
+  1055→  1055→                      <DialogHeader>
+  1056→  1056→                        <DialogTitle className="font-serif text-navy">Adicionar Despesa</DialogTitle>
+  1057→  1057→                        <DialogDescription>
+  1058→  1058→                          Registre um gasto operacional do caso.
+  1059→  1059→                        </DialogDescription>
+  1060→  1060→                      </DialogHeader>
+  1061→  1061→                      
+  1062→  1062→                      <div className="space-y-4 mt-4">
+  1063→  1063→                        <div className="space-y-2">
+  1064→  1064→                          <label className="text-sm font-medium text-navy">Descrição *</label>
+  1065→  1065→                          <Input
+  1066→  1066→                            placeholder="Ex: Taxa do Standesamt"
+  1067→  1067→                            value={formDespesa.descricao}
+  1068→  1068→                            onChange={(e) => setFormDespesa({...formDespesa, descricao: e.target.value})}
+  1069→  1069→                          />
+  1070→  1070→                        </div>
+  1071→  1071→                        
+  1072→  1072→                        <div className="grid grid-cols-2 gap-3">
+  1073→  1073→                          <div className="space-y-2">
+  1074→  1074→                            <label className="text-sm font-medium text-navy">Valor *</label>
+  1075→  1075→                            <Input
+  1076→  1076→                              placeholder="0,00"
+  1077→  1077→                              value={formDespesa.valor}
+  1078→  1078→                              onChange={(e) => setFormDespesa({...formDespesa, valor: e.target.value})}
+  1079→  1079→                            />
+  1080→  1080→                          </div>
+  1081→  1081→                          
+  1082→  1082→                          <div className="space-y-2">
+  1083→  1083→                            <label className="text-sm font-medium text-navy">Moeda</label>
+  1084→  1084→                            <Select value={formDespesa.moeda} onValueChange={(v) => setFormDespesa({...formDespesa, moeda: v as "BRL" | "EUR" | "USD"})}>
+  1085→  1085→                              <SelectTrigger>
+  1086→  1086→                                <SelectValue />
+  1087→  1087→                              </SelectTrigger>
+  1088→  1088→                              <SelectContent>
+  1089→  1089→                                <SelectItem value="BRL">R$ BRL</SelectItem>
+  1090→  1090→                                <SelectItem value="EUR">€ EUR</SelectItem>
+  1091→  1091→                                <SelectItem value="USD">$ USD</SelectItem>
+  1092→  1092→                              </SelectContent>
+  1093→  1093→                            </Select>
+  1094→  1094→                          </div>
+  1095→  1095→                        </div>
+  1096→  1096→                        
+  1097→  1097→                        <div className="space-y-2">
+  1098→  1098→                          <label className="text-sm font-medium text-navy">Categoria</label>
+  1099→  1099→                          <Select value={formDespesa.categoria} onValueChange={(v) => setFormDespesa({...formDespesa, categoria: v as Despesa["categoria"]})}>
+  1100→  1100→                            <SelectTrigger>
+  1101→  1101→                              <SelectValue />
+  1102→  1102→                            </SelectTrigger>
+  1103→  1103→                            <SelectContent>
+  1104→  1104→                              <SelectItem value="taxa_arquivo">Taxa de Arquivo</SelectItem>
+  1105→  1105→                              <SelectItem value="frete">Frete/Correio</SelectItem>
+  1106→  1106→                              <SelectItem value="cartorio_br">Cartório BR</SelectItem>
+  1107→  1107→                              <SelectItem value="traducao">Tradução</SelectItem>
+  1108→  1108→                              <SelectItem value="outro">Outro</SelectItem>
+  1109→  1109→                            </SelectContent>
+  1110→  1110→                          </Select>
+  1111→  1111→                        </div>
+  1112→  1112→
+  1113→  1113→                        <div className="flex justify-end gap-2 pt-2">
+  1114→  1114→                          <Button variant="outline" onClick={() => setDialogDespesaAberto(false)}>
+  1115→  1115→                            Cancelar
+  1116→  1116→                          </Button>
+  1117→  1117→                          <Button onClick={adicionarDespesa} className="bg-navy hover:bg-navy-light text-white">
+  1118→  1118→                            Adicionar
+  1119→  1119→                          </Button>
+  1120→  1120→                        </div>
+  1121→  1121→                      </div>
+  1122→  1122→                    </DialogContent>
+  1123→  1123→                  </Dialog>
+  1124→  1124→                </div>
+  1125→  1125→              </CardHeader>
+  1126→  1126→              <CardContent>
+  1127→  1127→                {cliente.financeiro.despesas.length === 0 ? (
+  1128→  1128→                  <p className="text-sm text-muted-foreground text-center py-4">
+  1129→  1129→                    Nenhuma despesa registrada.
+  1130→  1130→                  </p>
+  1131→  1131→                ) : (
+  1132→  1132→                  <div className="space-y-2 max-h-64 overflow-y-auto elegant-scroll">
+  1133→  1133→                    {cliente.financeiro.despesas.map((desp) => (
+  1134→  1134→                      <div key={desp.id} className="flex items-center justify-between p-2 rounded bg-orange-50/50 group">
+  1135→  1135→                        <div className="min-w-0 flex-1">
+  1136→  1136→                          <p className="text-sm font-medium text-orange-900 truncate">{desp.descricao}</p>
+  1137→  1137→                          <p className="text-xs text-orange-700">{desp.data} • {desp.categoria.replace("_", " ")}</p>
+  1138→  1138→                        </div>
+  1139→  1139→                        <div className="flex items-center gap-2">
+  1140→  1140→                          <span className="font-600 text-orange-800 whitespace-nowrap">
+  1141→  1141→                            {desp.moeda === "BRL" ? "R$" : desp.moeda === "EUR" ? "€" : "$"} {desp.valor.toFixed(2).replace(".", ",")}
+  1142→  1142→                          </span>
+  1143→  1143→                          <button
+  1144→  1144→                            onClick={() => excluirDespesa(desp.id)}
+  1145→  1145→                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded text-red-500 hover:bg-red-50"
+  1146→  1146→                          >
+  1147→  1147→                            <Trash2 className="size-3.5" />
+  1148→  1148→                          </button>
+  1149→  1149→                        </div>
+  1150→  1150→                      </div>
+  1151→  1151→                    ))}
+  1152→  1152→                    
+  1153→  1153→                    {/* Total despesas */}
+  1154→  1154→                    <div className="pt-2 mt-2 border-t border-orange-200 flex justify-between text-sm font-600 text-orange-900">
+  1155→  1155→                      <span>Total de Despesas:</span>
+  1156→  1156→                      <span>R$ {cliente.financeiro.despesas.reduce((s, d) => s + d.valor, 0).toFixed(2).replace(".", ",")}</span>
+  1157→  1157→                    </div>
+  1158→  1158→                  </div>
+  1159→  1159→                )}
+  1160→  1160→              </CardContent>
+  1161→  1161→            </Card>
+  1162→  1162→          </div>
+  1163→  1163→        </TabsContent>
+  1164→  1164→
+  1165→  1165→        {/* TAB 3: Timeline */}
+  1166→  1166→        <TabsContent value="timeline" className="mt-6 space-y-6">
+  1167→  1167→          <div>
+  1168→  1168→            <h2 className="font-serif text-lg font-600 text-navy">
+  1169→  1169→              Diário de Pesquisa
+  1170→  1170→            </h2>
+  1171→  1171→            <p className="text-sm text-muted-foreground mt-1">
+  1172→  1172→              Registre o progresso da investigação, comunicações com arquivos europeus e marcos importantes.
+  1173→  1173→            </p>
+  1174→  1174→          </div>
+  1175→  1175→
+  1176→  1176→          {/* Quick add entry */}
+  1177→  1177→          <Card className="border-navy/10">
+  1178→  1178→            <CardContent className="p-4 space-y-3">
+  1179→  1179→              <div className="grid gap-3 sm:grid-cols-2">
+  1180→  1180→                <Input
+  1181→  1181→                  placeholder="Título do evento (ex: E-mail enviado ao arquivo)"
+  1182→  1182→                  value={novaEntradaTitulo}
+  1183→  1183→                  onChange={(e) => setNovaEntradaTitulo(e.target.value)}
+  1184→  1184→                />
+  1185→  1185→                <Input
+  1186→  1186→                  placeholder="Link opcional (ex: Google Drive)"
+  1187→  1187→                  value={novoLink}
+  1188→  1188→                  onChange={(e) => setNovoLink(e.target.value)}
+  1189→  1189→                />
+  1190→  1190→              </div>
+  1191→  1191→              <textarea
+  1192→  1192→                placeholder="Descrição detalhada do progresso..."
+  1193→  1193→                value={novaEntradaDescricao}
+  1194→  1194→                onChange={(e) => setNovaEntradaDescricao(e.target.value)}
+  1195→  1195→                rows={2}
+  1196→  1196→                className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+  1197→  1197→              />
+  1198→  1198→              <div className="flex justify-end">
+  1199→  1199→                <Button
+  1200→  1200→                  onClick={adicionarEntradaTimeline}
+  1201→  1201→                  disabled={!novaEntradaTitulo.trim()}
+  1202→  1202→                  className="bg-navy hover:bg-navy-light text-white"
+  1203→  1203→                >
+  1204→  1204→                  <Plus className="size-4 mr-2" />
+  1205→  1205→                  Registrar Entrada
+  1206→  1206→                </Button>
+  1207→  1207→              </div>
+  1208→  1208→            </CardContent>
+  1209→  1209→          </Card>
+  1210→  1210→
+  1211→  1211→          {/* Timeline list */}
+  1212→  1212→          {cliente.timeline.length === 0 ? (
+  1213→  1213→            <Card className="border-dashed border-2">
+  1214→  1214→              <CardContent className="py-12 text-center">
+  1215→  1215→                <Clock className="size-12 mx-auto text-muted-foreground/30 mb-4" />
+  1216→  1216→                <h3 className="font-serif text-lg font-600 text-navy mb-2">
+  1217→  1217→                  Nenhum Registro Ainda
+  1218→  1218→                </h3>
+  1219→  1219→                <p className="text-sm text-muted-foreground">
+  1220→  1220→                  Comece a documentar o progresso da pesquisa adicionando entradas acima.
+  1221→  1221→                </p>
+  1222→  1222→              </CardContent>
+  1223→  1223→            </Card>
+  1224→  1224→          ) : (
+  1225→  1225→            <div className="space-y-3">
+  1226→  1226→              {cliente.timeline.map((entrada) => (
+  1227→  1227→                <Card key={entrada.id} className="border-navy/10 group relative">
+  1228→  1228→                  <CardContent className="p-4">
+  1229→  1229→                    <div className="flex items-start gap-3">
+  1230→  1230→                      {/* Timeline dot */}
+  1231→  1231→                      <div className="mt-1 size-3 rounded-full bg-navy shrink-0" />
+  1232→  1232→                      
+  1233→  1233→                      <div className="flex-1 min-w-0">
+  1234→  1234→                        <div className="flex items-start justify-between gap-2">
+  1235→  1235→                          <div>
+  1236→  1236→                            <div className="flex items-center gap-2 flex-wrap">
+  1237→  1237→                              <span className="text-xs font-500 text-gold-dark bg-gold/10 px-2 py-0.5 rounded">
+  1238→  1238→                                {entrada.data}
+  1239→  1239→                              </span>
+  1240→  1240→                              <h4 className="font-medium text-navy">{entrada.titulo}</h4>
+  1241→  1241→                            </div>
+  1242→  1242→                            
+  1243→  1243→                            {entrada.descricao && (
+  1244→  1244→                              <p className="mt-1 text-sm text-muted-foreground">
+  1245→  1245→                                {entrada.descricao}
+  1246→  1246→                              </p>
+  1247→  1247→                            )}
+  1248→  1248→                            
+  1249→  1249→                            {entrada.links && entrada.links.length > 0 && (
+  1250→  1250→                              <div className="mt-2 flex flex-wrap gap-2">
+  1251→  1251→                                {entrada.links.map((link, i) => (
+  1252→  1252→                                  <a
+  1253→  1253→                                    key={i}
+  1254→  1254→                                    href={link}
+  1255→  1255→                                    target="_blank"
+  1256→  1256→                                    rel="noopener noreferrer"
+  1257→  1257→                                    className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 underline"
+  1258→  1258→                                  >
+  1259→  1259→                                    <ExternalLink className="size-3" />
+  1260→  1260→                                    Abrir Link
+  1261→  1261→                                  </a>
+  1262→  1262→                                ))}
+  1263→  1263→                              </div>
+  1264→  1264→                            )}
+  1265→  1265→                          </div>
+  1266→  1266→                          
+  1267→  1267→                          <button
+  1268→  1268→                            onClick={() => excluirEntrada(entrada.id)}
+  1269→  1269→                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-md bg-red-50 text-red-500 hover:bg-red-100 shrink-0"
+  1270→  1270→                          >
+  1271→  1271→                            <Trash2 className="size-4" />
+  1272→  1272→                          </button>
+  1273→  1273→                        </div>
+  1274→  1274→                      </div>
+  1275→  1275→                    </div>
+  1276→  1276→                  </CardContent>
+  1277→  1277→                </Card>
+  1278→  1278→              ))}
+  1279→  1279→            </div>
+  1280→  1280→          )}
+  1281→  1281→        </TabsContent>
+  1282→  1282→      </Tabs>
+  1283→  1283→
+  1284→  1284→      {/* Edit Node Modal - With Expandable Registry Sections */}
+  1285→  1285→      <Dialog open={dialogNoAberto} onOpenChange={setDialogNoAberto}>
+  1286→  1286→        <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
+  1287→  1287→          <DialogHeader>
+  1288→  1288→            <DialogTitle className="font-serif text-navy flex items-center gap-2">
+  1289→  1289→              <User className="size-5" />
+  1290→  1290→              Editar Membro da Família
+  1291→  1291→            </DialogTitle>
+  1292→  1292→            <DialogDescription>
+  1293→  1293→              Atualize os dados pessoais e registros civis deste membro.
+  1294→  1294→            </DialogDescription>
+  1295→  1295→          </DialogHeader>
+  1296→  1296→          
+  1297→  1297→          <div className="space-y-4 mt-4">
+  1298→  1298→            {/* Nome Completo */}
+  1299→  1299→            <div className="space-y-2">
+  1300→  1300→              <label className="text-sm font-medium text-navy">Nome Completo *</label>
+  1301→  1301→              <Input
+  1302→  1302→                value={formNo.nomeCompleto || ""}
+  1303→  1303→                onChange={(e) => setFormNo({...formNo, nomeCompleto: e.target.value})}
+  1304→  1304→                placeholder="Nome completo do membro"
+  1305→  1305→              />
+  1306→  1306→            </div>
+  1307→  1307→
+  1308→  1308→            {/* Nascimento Section - Expandable */}
+  1309→  1309→            <div className={`border rounded-lg overflow-hidden transition-all ${formNo.nascimento?.data ? 'border-green-300 bg-green-50/30' : 'border-gray-200'}`}>
+  1310→  1310→              {/* Section Header / Toggle */}
+  1311→  1311→              <button
+  1312→  1312→                type="button"
+  1313→  1313→                onClick={() => {
+  1314→  1314→                  if (!formNo.nascimento?.data) {
+  1315→  1315→                    setFormNo({
+  1316→  1316→                      ...formNo,
+  1317→  1317→                      nascimento: { data: '', local: '', tipo: 'nascimento', completo: false }
+  1318→  1318→                    });
+  1319→  1319→                  } else {
+  1320→  1320→                    const { nascimento, ...rest } = formNo;
+  1321→  1321→                    setFormNo(rest);
+  1322→  1322→                  }
+  1323→  1323→                }}
+  1324→  1324→                className="w-full flex items-center justify-between p-3 hover:bg-green-50/50 transition-colors"
+  1325→  1325→              >
+  1326→  1326→                <div className="flex items-center gap-2">
+  1327→  1327→                  <CalendarDays className={`size-5 ${formNo.nascimento?.data ? 'text-green-600' : 'text-gray-400'}`} />
+  1328→  1328→                  <span className={`font-medium ${formNo.nascimento?.data ? 'text-green-800' : 'text-gray-600'}`}>
+  1329→  1329→                    Nascimento
+  1330→  1330→                  </span>
+  1331→  1331→                  {formNo.nascimento?.data && formNo.nascimento.completo && (
+  1332→  1332→                    <CheckCircle2 className="size-4 text-green-600" />
+  1333→  1333→                  )}
+  1334→  1334→                </div>
+  1335→  1335→                <span className={`text-xs px-2 py-1 rounded-full ${
+  1336→  1336→                  formNo.nascimento?.data 
+  1337→  1337→                    ? 'bg-green-100 text-green-700' 
+  1338→  1338→                    : 'bg-gray-100 text-gray-500'
+  1339→  1339→                }`}>
+  1340→  1340→                  {formNo.nascimento?.data ? 'Ativo' : '+ Adicionar'}
+  1341→  1341→                </span>
+  1342→  1342→              </button>
+  1343→  1343→
+  1344→  1344→              {/* Expanded Content */}
+  1345→  1345→              {formNo.nascimento && (
+  1346→  1346→                <div className="p-3 pt-0 space-y-3 border-t border-green-200/50 mt-1">
+  1347→  1347→                  <div className="grid grid-cols-2 gap-3 pt-3">
+  1348→  1348→                    <div className="space-y-1.5">
+  1349→  1349→                      <label className="text-xs font-medium text-green-800">Data</label>
+  1350→  1350→                      <Input
+  1351→  1351→                        placeholder="DD/MM/YYYY"
+  1352→  1352→                        value={formNo.nascimento.data || ""}
+  1353→  1353→                        onChange={(e) => {
+  1354→  1354→                          const newData = formatarData(e.target.value);
+  1355→  1355→                          const hasAllFields = newData && formNo.nascimento.local;
+  1356→  1356→                          setFormNo({
+  1357→  1357→                            ...formNo,
+  1358→  1358→                            nascimento: {...formNo.nascimento!, data: newData, completo: !!hasAllFields}
+  1359→  1359→                          });
+  1360→  1360→                        }}
+  1361→  1361→                        maxLength={10}
+  1362→  1362→                        className="border-green-200 focus:border-green-400"
+  1363→  1363→                      />
+  1364→  1364→                    </div>
+  1365→  1365→                    <div className="space-y-1.5">
+  1366→  1366→                      <label className="text-xs font-medium text-green-800">Local</label>
+  1367→  1367→                      <Input
+  1368→  1368→                        placeholder="Cidade, País"
+  1369→  1369→                        value={formNo.nascimento.local || ""}
+  1370→  1370→                        onChange={(e) => {
+  1371→  1371→                          const hasAllFields = formNo.nascimento.data && e.target.value;
+  1372→  1372→                          setFormNo({
+  1373→  1373→                            ...formNo,
+  1374→  1374→                            nascimento: {...formNo.nascimento!, local: e.target.value, completo: !!hasAllFields}
+  1375→  1375→                          });
+  1376→  1376→                        }}
+  1377→  1377→                        className="border-green-200 focus:border-green-400"
+  1378→  1378→                      />
+  1379→  1379→                    </div>
+  1380→  1380→                  </div>
+  1381→  1381→
+  1382→  1382→                  {/* Civil Registry Fields - with OCR Paste Zone */}
+  1383→  1383→                  {(formNo.nascimento.data) && (
+  1384→  1384→                    <div className="pt-2 space-y-3 bg-white rounded-md p-3 border border-green-200/50">
+  1385→  1385→                      <div className="flex items-center justify-between">
+  1386→  1386→                        <p className="text-[10px] font-semibold uppercase tracking-wide text-green-700 flex items-center gap-1">
+  1387→  1387→                          <FileText className="size-3" /> Dados do Registro Civil
+  1388→  1388→                        </p>
+  1389→  1389→                      </div>
+  1390→  1390→                      
+  1391→  1391→                      {/* Zona de Colar Matrícula */}
+  1392→  1392→                      <MatriculaPasteZone 
+  1393→  1393→                        tipoRegistro="nascimento"
+  1394→  1394→                        isActive={zonaColarAtiva === 'nascimento'}
+  1395→  1395→                        onActivate={() => setZonaColarAtiva('nascimento')}
+  1396→  1396→                        onDadosExtraidos={(dados) => {
+  1397→  1397→                          console.log('Dados extraídos Nascimento:', dados);
+  1398→  1398→                          
+  1399→  1399→                          // Atualizar formNo com os dados extraídos
+  1400→  1400→                          const novoRegistroCivil = {
+  1401→  1401→                            ...(formNo.nascimento.registroCivil || {}),
+  1402→  1402→                            cartorio: dados.cartorio || formNo.nascimento.registroCivil?.cartorio || '',
+  1403→  1403→                            livro: dados.livro || formNo.nascimento.registroCivil?.livro || '',
+  1404→  1404→                            folha: dados.folha || formNo.nascimento.registroCivil?.folha || '',
+  1405→  1405→                            termo: dados.termo || formNo.nascimento.registroCivil?.termo || '',
+  1406→  1406→                          };
+  1407→  1407→                          
+  1408→  1408→                          // Verificar se está completo
+  1409→  1409→                          const temTodosCampos = novoRegistroCivil.cartorio || novoRegistroCivil.livro || novoRegistroCivil.folha || novoRegistroCivil.termo;
+  1410→  1410→                          
+  1411→  1411→                          setFormNo({
+  1412→  1412→                            ...formNo,
+  1413→  1413→                            nascimento: {
+  1414→  1414→                              ...formNo.nascimento!,
+  1415→  1415→                              local: dados.municipio ? `${dados.municipio}${dados.uf ? '/' + dados.uf : ''}` : formNo.nascimento.local,
+  1416→  1416→                              registroCivil: novoRegistroCivil,
+  1417→  1417→                              completo: !!(formNo.nascimento.data && temTodosCampos)
+  1418→  1418→                            }
+  1419→  1419→                          });
+  1420→  1420→                        }}
+  1421→  1421→                      />
+  1422→  1422→                      
+  1423→  1423→                      <div className="grid grid-cols-2 gap-2">
+  1424→  1424→                        <div className="space-y-1">
+  1425→  1425→                          <label className="text-[10px] text-muted-foreground">Cartório</label>
+  1426→  1426→                          <Input
+  1427→  1427→                            placeholder="Nome do cartório"
+  1428→  1428→                            value={formNo.nascimento.registroCivil?.cartorio || ''}
+  1429→  1429→                            onChange={(e) => setFormNo({
+  1430→  1430→                              ...formNo,
+  1431→  1431→                              nascimento: {
+  1432→  1432→                                ...formNo.nascimento!,
+  1433→  1433→                                registroCivil: {...(formNo.nascimento.registroCivil || {}), cartorio: e.target.value}
+  1434→  1434→                              }
+  1435→  1435→                            })}
+  1436→  1436→                            className="h-8 text-xs"
+  1437→  1437→                          />
+  1438→  1438→                        </div>
+  1439→  1439→                        <div className="space-y-1">
+  1440→  1440→                          <label className="text-[10px] text-muted-foreground">Livro</label>
+  1441→  1441→                          <Input
+  1442→  1442→                            placeholder="Nº do livro"
+  1443→  1443→                            value={formNo.nascimento.registroCivil?.livro || ''}
+  1444→  1444→                            onChange={(e) => setFormNo({
+  1445→  1445→                              ...formNo,
+  1446→  1446→                              nascimento: {
+  1447→  1447→                                ...formNo.nascimento!,
+  1448→  1448→                                registroCivil: {...(formNo.nascimento.registroCivil || {}), livro: e.target.value}
+  1449→  1449→                              }
+  1450→  1450→                            })}
+  1451→  1451→                            className="h-8 text-xs"
+  1452→  1452→                          />
+  1453→  1453→                        </div>
+  1454→  1454→                        <div className="space-y-1">
+  1455→  1455→                          <label className="text-[10px] text-muted-foreground">Folha</label>
+  1456→  1456→                          <Input
+  1457→  1457→                            placeholder="Nº da folha"
+  1458→  1458→                            value={formNo.nascimento.registroCivil?.folha || ''}
+  1459→  1459→                            onChange={(e) => setFormNo({
+  1460→  1460→                              ...formNo,
+  1461→  1461→                              nascimento: {
+  1462→  1462→                                ...formNo.nascimento!,
+  1463→  1463→                                registroCivil: {...(formNo.nascimento.registroCivil || {}), folha: e.target.value}
+  1464→  1464→                              }
+  1465→  1465→                            })}
+  1466→  1466→                            className="h-8 text-xs"
+  1467→  1467→                          />
+  1468→  1468→                        </div>
+  1469→  1469→                        <div className="space-y-1">
+  1470→  1470→                          <label className="text-[10px] text-muted-foreground">Termo</label>
+  1471→  1471→                          <Input
+  1472→  1472→                            placeholder="Nº do termo"
+  1473→  1473→                            value={formNo.nascimento.registroCivil?.termo || ''}
+  1474→  1474→                            onChange={(e) => setFormNo({
+  1475→  1475→                              ...formNo,
+  1476→  1476→                              nascimento: {
+  1477→  1477→                                ...formNo.nascimento!,
+  1478→  1478→                                registroCivil: {...(formNo.nascimento.registroCivil || {}), termo: e.target.value}
+  1479→  1479→                              }
+  1480→  1480→                            })}
+  1481→  1481→                            className="h-8 text-xs"
+  1482→  1482→                          />
+  1483→  1483→                        </div>
+  1484→  1484→                      </div>
+  1485→  1485→                    </div>
+  1486→  1486→                  )}
+  1487→  1487→                </div>
+  1488→  1488→              )}
+  1489→  1489→            </div>
+  1490→  1490→
+  1491→  1491→            {/* Casamento Section - Expandable */}
+  1492→  1492→            <div className={`border rounded-lg overflow-hidden transition-all ${formNo.casamento?.data ? 'border-pink-300 bg-pink-50/30' : 'border-gray-200'}`}>
+  1493→  1493→              <button
+  1494→  1494→                type="button"
+  1495→  1495→                onClick={() => {
+  1496→  1496→                  if (!formNo.casamento?.data) {
+  1497→  1497→                    setFormNo({
+  1498→  1498→                      ...formNo,
+  1499→  1499→                      casamento: { data: '', local: '', tipo: 'casamento', completo: false }
+  1500→  1500→                    });
+
+[showing lines 1001-1500 of 1939; use offset=1501 with limit to continue reading]
