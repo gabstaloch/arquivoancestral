@@ -108,31 +108,232 @@ function PersonCard({
     avo_materno: "Avô Materno",
     avo_materna: "Avó Materna",
     // 3ª Geração - Bisavós
-    bisavo_paterno_paterno: "Bisavô Paterno-Paterno",
-    bisavo_paterno_paterna: "Bisavó Paterno-Paterna",
-    bisavo_paterno_materno: "Bisavô Paterno-Materno",
-    bisavo_paterno_materna: "Bisavó Paterno-Materna",
-    bisavo_materno_paterno: "Bisavô Materno-Paterno",
-    bisavo_materno_paterna: "Bisavó Materno-Paterna",
-    bisavo_materno_materno: "Bisavô Materno-Materno",
-    bisavo_materno_materna: "Bisavó Materno-Materna",
+    bisavo_paterno_paterno: "Bisavô PPP",
+    bisavo_paterno_paterna: "Bisavó PPM",
+    bisavo_paterno_materno: "Bisavô PMP",
+    bisavo_paterno_materna: "Bisavó PMM",
+    bisavo_materno_paterno: "Bisavô MPP",
+    bisavo_materno_paterna: "Bisavó MPM",
+    bisavo_materno_materno: "Bisavô MMP",
+    bisavo_materno_materna: "Bisavó MMM",
     // 4ª Geração - Tetravós
-    tetravô_1: "Tetravô (PPPP)",
-    tetravó_1: "Tetravó (PPPM)",
-    tetravô_2: "Tetravô (PPMP)",
-    tetravó_2: "Tetravó (PPMM)",
-    tetravô_3: "Tetravô (PMPP)",
-    tetravó_3: "Tetravó (PMPM)",
-    tetravô_4: "Tetravô (PMMP)",
-    tetravó_4: "Tetravó (PMMM)",
-    tetravô_5: "Tetravô (MPPP)",
-    tetravó_5: "Tetravó (MPPM)",
-    tetravô_6: "Tetravô (MPMP)",
-    tetravó_6: "Tetravó (MPMM)",
-    tetravô_7: "Tetravô (MMPP)",
-    tetravó_7: "Tetravó (MMPM)",
-    tetravô_8: "Tetravô (MMMP)",
-    tetravó_8: "Tetravó (MMMM)",
+    tetra_PPPP: "Tetravô PPPP",
+    tetra_PPPM: "Tetravó PPPM",
+    tetra_PPMP: "Tetravô PPMP",
+    tetra_PPMM: "Tetravó PPMM",
+    tetra_PMPP: "Tetravô PMPP",
+    tetra_PMPM: "Tetravó PMPM",
+    tetra_PMMP: "Tetravô PMMP",
+    tetra_PMMM: "Tetravó PMMM",
+    tetra_MPPP: "Tetravô MPPP",
+    tetra_MPPM: "Tetravó MPPM",
+    tetra_MPMP: "Tetravô MPMP",
+    tetra_MPMM: "Tetravó MPMM",
+    tetra_MMPP: "Tetravô MMPP",
+    tetra_MMPM: "Tetravó MMPM",
+    tetra_MMMP: "Tetravô MMMP",
+    tetra_MMMM: "Tetravó MMMM",
+    // 5ª Geração - Pentavós
+    penta_PPPPP: "Pentavô PPPPP",
+    penta_PPPPM: "Pentavó PPPPM",
+    penta_PPPMP: "Pentavô PPPMP",
+    penta_PPPMM: "Pentavó PPPMM",
+    penta_PPMPP: "Pentavô PPMPP",
+    penta_PPMPM: "Pentavó PPMPM",
+    penta_PPMMP: "Pentavô PPMMP",
+    penta_PPMMM: "Pentavó PPMMM",
+    penta_PMPPP: "Pentavô PMPPP",
+    penta_PMPPM: "Pentavó PMPPM",
+    penta_PMPMP: "Pentavô PMPMP",
+    penta_PMPMM: "Pentavó PMPMM",
+    penta_PMMPP: "Pentavô PMMPP",
+    penta_PMPMM_2: "Pentavó PMMPM",
+    penta_PMMMP: "Pentavô PMMMP",
+    penta_PMMMM: "Pentavó PMMMM",
+    penta_MPPPP: "Pentavô MPPPP",
+    penta_MPPPM: "Pentavó MPPPM",
+    penta_MPPMP: "Pentavô MPPMP",
+    penta_MPPMM: "Pentavó MPPMM",
+    penta_MPMPM: "Pentavó MPMPM",
+    penta_MPMMP: "Pentavó MPMMP",
+    penta_MPMMM: "Pentavó MPMMM",
+    penta_MMPPP: "Pentavô MMPPP",
+    penta_MMPPM: "Pentavó MMPPM",
+    penta_MMPMP: "Pentavô MMPMP",
+    penta_MMPMM: "Pentavó MMPMM",
+    penta_MMMPP: "Pentavô MMMPP",
+    penta_MMMPM: "Pentavó MMMPM",
+    penta_MMMMP: "Pentavô MMMMP",
+    penta_MMMMM: "Pentavó MMMMM",
+    // 6ª Geração - Hexavós (seleção principal)
+    hexa_PPPPPP: "Hexavô PPPPPP",
+    hexa_PPPPPM: "Hexavó PPPPPM",
+    hexa_PPPPMP: "Hexavô PPPPMP",
+    hexa_PPPPMM: "Hexavó PPPPMM",
+    hexa_PPPMPP: "Hexavô PPPMPP",
+    hexa_PPPMPM: "Hexavó PPPMPM",
+    hexa_PPPMMP: "Hexavô PPPMMP",
+    hexa_PPPMMM: "Hexavó PPPMMM",
+    hexa_PPMPPP: "Hexavô PPMPPP",
+    hexa_PPMPPM: "Hexavó PPMPPM",
+    hexa_PPPMMP_2: "Hexavô PPMMPM",
+    hexa_PPMMPM: "Hexavô PPMMPP",
+    hexa_PPMMMP: "Hexavô PPMMMP",
+    hexa_PPMMMM: "Hexavó PPMMMM",
+    hexa_PMPPPP: "Hexavô PMPPPP",
+    hexa_PMPPPM: "Hexavô PMPPPM",
+    hexa_PMPMPM: "Hexavô PMPMPM",
+    hexa_PMPMMP: "Hexavô PMPMMP",
+    hexa_PMPMMP_2: "Hexavô PMPPMP",
+    hexa_PMPMMM: "Hexavô PMPMMM",
+    hexa_PMMPPP: "Hexavô PMMPPP",
+    hexa_PMMPPM: "Hexavô PMMPPM",
+    hexa_PMMPMP: "Hexavô PMMPMP",
+    hexa_PMMPMM: "Hexavô PMMPMM",
+    hexa_PMMMPP: "Hexavô PMMMPP",
+    hexa_PMMMPM: "Hexavô PMMMPM",
+    hexa_PMMMMP: "Hexavô PMMMMP",
+    hexa_PMMMMM: "Hexavô PMMMMM",
+    hexa_MPPPPP: "Hexavô MPPPPP",
+    hexa_MPPPPM: "Hexavó MPPPPM",
+    hexa_MPPPMP: "Hexavô MPPPMP",
+    hexa_MPPPMM: "Hexavô MPPPMM",
+    hexa_MPPMPP: "Hexavô MPPMPP",
+    hexa_MPPMPM: "Hexavô MPPMPM",
+    hexa_MPPMMP: "Hexavô MPPMMP",
+    hexa_MPPMMM: "Hexavô MPPMMM",
+    hexa_MPMPPP: "Hexavô MPMPPP",
+    hexa_MPMPPM: "Hexavô MPMPPM",
+    hexa_MPMPMP: "Hexavô MPMPMP",
+    hexa_MPMPMM: "Hexavô MPMPMM",
+    hexa_MPMMPM: "Hexavô MPMMPM",
+    hexa_MPMMPP: "Hexavô MPMMPP",
+    hexa_MPMMMP: "Hexavô MPMMMP",
+    hexa_MPMMMM: "Hexavô MPMMMM",
+    hexa_MMPPPP: "Hexavô MMPPPP",
+    hexa_MMPPPM: "Hexavô MMPPPM",
+    hexa_MMPPMP: "Hexavô MMPPMP",
+    hexa_MMPPMM: "Hexavô MMPPMM",
+    hexa_MMPMPP: "Hexavô MMPMPP",
+    hexa_MMPMPM: "Hexavô MMPMPM",
+    hexa_MMPMMP: "Hexavô MMPMMP",
+    hexa_MMPMMM: "Hexavô MMPMMM",
+    hexa_MMMPPP: "Hexavô MMMPPP",
+    hexa_MMMPPM: "Hexavô MMMPPM",
+    hexa_MMMMPM: "Hexavô MMMMPM",
+    hexa_MMMMPP: "Hexavô MMMMPP",
+    hexa_MMMMPM_2: "Hexavô MMMMPM",
+    hexa_MMMMMP: "Hexavô MMMMMP",
+    hexa_MMMMMM: "Hexavô MMMMMM",
+    // 7ª Geração - Heptavós (seleção principal)
+    hepta_PPPPPPP: "Heptavô PPPPPPP",
+    hepta_PPPPPPM: "Heptavó PPPPPPM",
+    hepta_PPPPPMP: "Heptavô PPPPPMP",
+    hepta_PPPPMMM: "Heptavó PPPPMMM",
+    hepta_PPPPMPP: "Heptavô PPPPMPP",
+    hepta_PPPPMPM: "Heptavó PPPPMPM",
+    hepta_PPPPMMP: "Heptavô PPPPMMP",
+    hepta_PPPPPMM_2: "Heptavó PPPPMM",
+    hepta_PPPMPPP: "Heptavô PPPMPPP",
+    hepta_PPPMPPM: "Heptavó PPPMPPM",
+    hepta_PPPMPMP: "Heptavô PPPMPMP",
+    hepta_PPPMPMM: "Heptavó PPPMPMM",
+    hepta_PPPMMPP: "Heptavô PPPMMPP",
+    hepta_PPPMMPM_2: "Heptavó PPPMMPM",
+    hepta_PPPMMMP: "Heptavô PPPMMMP",
+    hepta_PPPMMMM: "Heptavó PPPMMMM",
+    hepta_PPMPPPP: "Heptavô PPMPPPP",
+    hepta_PPMPPPM: "Heptavó PPMPPPM",
+    hepta_PPMPPMP: "Heptavô PPMPPMP",
+    hepta_PPMPPMM: "Heptavó PPMPPMM",
+    hepta_PPPMPPM: "Heptavó PPPMPPM",
+    hepta_PPMPPMP_2: "Heptavô PPPMPPM",
+    hepta_PPMMPMP: "Heptavô PPMMPMP",
+    hepta_PPMMPMM: "Heptavó PPMMPMM",
+    hecta_PPMMMPM: "Heptavô PPMMMPM",
+    hepta_PPMMMMPP: "Heptavó PPMMMMP",
+    hepta_PPMMMMMM: "Heptavó PPMMMMM",
+    hepta_PMPPPPP: "Heptavô PMPPPPP",
+    hepta_PMPPPPM: "Heptavó PMPPPPM",
+    hepta_PMPPPMP: "Heptavô PMPPPMP",
+    hepta_PMPPPMM: "Heptavó PMPPPMM",
+    hepta_PMPMPPP: "Heptavô PMPMPPP",
+    hepta_PMPMPPM: "Heptavó PMPMPPM",
+    hepta_PMPMPMP: "Heptavô PMPMPMP",
+    hepta_PMPMPMM: "Heptavó PMPMPMM",
+    hepta_PMPMMPP: "Heptavô PMPMMPP",
+    hepta_PMPMMPM: "Heptavó PMPMMPM",
+    hepta_PMPMMMP: "Heptavô PMPMMMP",
+    hepta_PMPMMMM: "Heptavó PMPMMMM",
+    hepta_PMMPPPP: "Heptavô PMMPPPP",
+    hepta_PMMPPPM: "Heptavó PMMPPPM",
+    hepta_PMMPPMP: "Heptavô PMMPPMP",
+    hepta_PMMPPMM: "Heptavó PMMPPMM",
+    hepta_PMMPMPP: "Heptavô PMMPMPP",
+    hepta_PMMPMPM: "Heptavó PMMPMPM",
+    hepta_PMMPMMP: "Heptavô PMMPMMP",
+    hepta_PMMPMMM: "Heptavó PMMPMMM",
+    hepta_PMMMPPP: "Heptavô PMMMPPP",
+    hepta_PMMMPPM: "Heptavó PMMMPPM",
+    hepta_PMMMMPM: "Heptavó PMMMMPM",
+    hepta_PMMMMPP: "Heptavó PMMMMPP",
+    hepta_PMMMMPM_2: "Heptavó PMMMMPM",
+    hepta_PMMMMMP: "Heptavó PMMMMMP",
+    hepta_PMMMMMMM: "Heptavó PMMMMMM",
+    hepta_MPPPPPP: "Heptavô MPPPPPP",
+    hepta_MPPPPPM: "Heptavó MPPPPPM",
+    hepta_MPPPMPM: "Heptavô MPPPMPM",
+    hepta_MPPPPMM: "Heptavó MPPPPMM",
+    hepta_MPPPMPP: "Heptavô MPPPMPP",
+    hepta_MPPPMPM_2: "Heptavó MPPPMPM",
+    hepta_MPPPMMP: "Heptavô MPPPMMP",
+    hepta_MPPPPMMM: "Heptavó MPPPPMM",
+    hepta_MPPMPPP: "Heptavô MPPMPPP",
+    hepta_MPPMPPM: "Heptavó MPPMPPM",
+    hepta_MPPMPMP: "Heptavô MPPMPMP",
+    hepta_MPPMPMM: "Heptavó MPPMPMM",
+    hepta_MPPMMPP: "Heptavô MPPMMPP",
+    hepta_MPPMMPM_2: "Heptavó MPPMMPM",
+    hepta_MPPMMMP: "Heptavô MPPMMMP",
+    hepta_MPPMMMM: "Heptavó MPPMMMM",
+    hepta_MPMPPPP: "Heptavô MPMPPPP",
+    hepta_MPMPPPM: "Heptavó MPMPPPM",
+    hepta_MPMPPMP: "Heptavô MPMPPMP",
+    hepta_MPMPPMM: "Heptavó MPMPPMM",
+    hepta_MPMPMPP: "Heptavô MPMPMPP",
+    hepta_MPMPMPM: "Heptavó MPMPMPM",
+    hepta_MPMPMMP: "Heptavô MPMPMMP",
+    hepta_MPMPMMM: "Heptavó MPMPMMM",
+    hepta_MPMMPPP: "Heptavô MPMMPPP",
+    hepta_MPMMPMP: "Heptavó MPMMPMP",
+    hepta_MPMMPMM: "Heptavó MPMMPMM",
+    hepta_MPMMPPP: "Heptavô MPMMPPP",
+    hepta_MPMMPPM: "Heptavó MPMMPPM",
+    hepta_MPMMMPM: "Heptavô MPMMMPM",
+    hepta_MPMMMMM: "Heptavó MPMMMMM",
+    hepta_MMPPPPP: "Heptavô MMPPPPP",
+    hepta_MMPPPPM: "Heptavó MMPPPPM",
+    hepta_MMPPMPM: "Heptavô MMPPMPM",
+    hepta_MMPPMMM: "Heptavó MMPPMMM",
+    hepta_MMPMPPP: "Heptavô MMPMPPP",
+    hepta_MMPMPPM: "Heptavó MMPMPPM",
+    hepta_MMPMPMP: "Heptavô MMPMPMP",
+    hepta_MMPMPMM: "Heptavó MMPMPMM",
+    hepta_MMPMPPP_2: "Heptavô MMPMPPP",
+    hepta_MMPMPPM_2: "Heptavó MMPMPPM",
+    hepta_MMPMMMP: "Heptavô MMPMMMP",
+    hepta_MMPMMMM: "Heptavó MMPMMMM",
+    hepta_MMMPPPP: "Heptavô MMMPPPP",
+    hepta_MMMPPPM: "Heptavó MMMPPPM",
+    hepta_MMMPPMP: "Heptavô MMMPPMP",
+    hepta_MMMPPMM: "Heptavó MMMPPMM",
+    hepta_MMMMPMP: "Heptavô MMMMPMP",
+    hepta_MMMMPPP: "Heptavô MMMMPPP",
+    hepta_MMMMPPM: "Heptavó MMMMPPM",
+    hepta_MMMMMPM: "Heptavó MMMMMPM",
+    hepta_MMMMMPP: "Heptavó MMMMMPP",
+    hepta_MMMMMMP: "Heptavô MMMMMMP",
+    hepta_MMMMMMM: "Heptavó MMMMMMM",
     // Ancestral Europeu/Emigrante
     ancestral: "Ancestral Europeu",
   };
@@ -946,7 +1147,7 @@ export default function FichaCliente() {
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="max-h-[400px] overflow-y-auto">
                         {/* 1ª Geração - Pais */}
                         <SelectItem value="pai">Pai</SelectItem>
                         <SelectItem value="mae">Mãe</SelectItem>
@@ -958,32 +1159,246 @@ export default function FichaCliente() {
                         <SelectItem value="avo_materna">Avó Materna</SelectItem>
                         
                         {/* 3ª Geração - Bisavós */}
-                        <SelectItem value="bisavo_paterno_paterno">Bisavô Paterno-Paterno</SelectItem>
-                        <SelectItem value="bisavo_paterno_paterna">Bisavó Paterno-Paterna</SelectItem>
-                        <SelectItem value="bisavo_paterno_materno">Bisavô Paterno-Materno</SelectItem>
-                        <SelectItem value="bisavo_paterno_materna">Bisavó Paterno-Materna</SelectItem>
-                        <SelectItem value="bisavo_materno_paterno">Bisavô Materno-Paterno</SelectItem>
-                        <SelectItem value="bisavo_materno_paterna">Bisavó Materno-Paterna</SelectItem>
-                        <SelectItem value="bisavo_materno_materno">Bisavô Materno-Materno</SelectItem>
-                        <SelectItem value="bisavo_materno_materna">Bisavó Materno-Materna</SelectItem>
+                        <SelectItem value="bisavo_paterno_paterno">Bisavô PPP</SelectItem>
+                        <SelectItem value="bisavo_paterno_paterna">Bisavó PPM</SelectItem>
+                        <SelectItem value="bisavo_paterno_materno">Bisavô PMP</SelectItem>
+                        <SelectItem value="bisavo_paterno_materna">Bisavó PMM</SelectItem>
+                        <SelectItem value="bisavo_materno_paterno">Bisavô MPP</SelectItem>
+                        <SelectItem value="bisavo_materno_paterna">Bisavó MPM</SelectItem>
+                        <SelectItem value="bisavo_materno_materno">Bisavô MMP</SelectItem>
+                        <SelectItem value="bisavo_materno_materna">Bisavó MMM</SelectItem>
                         
                         {/* 4ª Geração - Tetravós */}
-                        <SelectItem value="tetravô_1">Tetravô 1 (PPPP)</SelectItem>
-                        <SelectItem value="tetravó_1">Tetravó 1 (PPPM)</SelectItem>
-                        <SelectItem value="tetravô_2">Tetravô 2 (PPMP)</SelectItem>
-                        <SelectItem value="tetravó_2">Tetravó 2 (PPMM)</SelectItem>
-                        <SelectItem value="tetravô_3">Tetravô 3 (PMPP)</SelectItem>
-                        <SelectItem value="tetravó_3">Tetravó 3 (PMPM)</SelectItem>
-                        <SelectItem value="tetravô_4">Tetravô 4 (PMMP)</SelectItem>
-                        <SelectItem value="tetravó_4">Tetravó 4 (PMMM)</SelectItem>
-                        <SelectItem value="tetravô_5">Tetravô 5 (MPPP)</SelectItem>
-                        <SelectItem value="tetravó_5">Tetravó 5 (MPPM)</SelectItem>
-                        <SelectItem value="tetravô_6">Tetravô 6 (MPMP)</SelectItem>
-                        <SelectItem value="tetravó_6">Tetravó 6 (MPMM)</SelectItem>
-                        <SelectItem value="tetravô_7">Tetravô 7 (MMPP)</SelectItem>
-                        <SelectItem value="tetravó_7">Tetravó 7 (MMPM)</SelectItem>
-                        <SelectItem value="tetravô_8">Tetravô 8 (MMMP)</SelectItem>
-                        <SelectItem value="tetravó_8">Tetravó 8 (MMMM)</SelectItem>
+                        <SelectItem value="tetra_PPPP">Tetravô PPPP</SelectItem>
+                        <SelectItem value="tetra_PPPM">Tetravó PPPM</SelectItem>
+                        <SelectItem value="tetra_PPMP">Tetravô PPMP</SelectItem>
+                        <SelectItem value="tetra_PPMM">Tetravó PPMM</SelectItem>
+                        <SelectItem value="tetra_PMPP">Tetravô PMPP</SelectItem>
+                        <SelectItem value="tetra_PMPM">Tetravó PMPM</SelectItem>
+                        <SelectItem value="tetra_PMMP">Tetravô PMMP</SelectItem>
+                        <SelectItem value="tetra_PMMM">Tetravó PMMM</SelectItem>
+                        <SelectItem value="tetra_MPPP">Tetravô MPPP</SelectItem>
+                        <SelectItem value="tetra_MPPM">Tetravó MPPM</SelectItem>
+                        <SelectItem value="tetra_MPMP">Tetravô MPMP</SelectItem>
+                        <SelectItem value="tetra_MPMM">Tetravó MPMM</SelectItem>
+                        <SelectItem value="tetra_MMPP">Tetravô MMPP</SelectItem>
+                        <SelectItem value="tetra_MMPM">Tetravó MMPM</SelectItem>
+                        <SelectItem value="tetra_MMMP">Tetravô MMMP</SelectItem>
+                        <SelectItem value="tetra_MMMM">Tetravó MMMM</SelectItem>
+                        
+                        {/* 5ª Geração - Pentavós (32) */}
+                        <SelectItem value="penta_PPPPP">Pentavô PPPPP</SelectItem>
+                        <SelectItem value="penta_PPPPM">Pentavó PPPPM</SelectItem>
+                        <SelectItem value="penta_PPPMP">Pentavô PPPMP</SelectItem>
+                        <SelectItem value="penta_PPPMM">Pentavó PPPMM</SelectItem>
+                        <SelectItem value="penta_PPMPP">Pentavô PPMPP</SelectItem>
+                        <SelectItem value="penta_PPMPM">Pentavó PPMPM</SelectItem>
+                        <SelectItem value="penta_PPMMP">Pentavô PPMMP</SelectItem>
+                        <SelectItem value="penta_PPMMM">Pentavó PPMMM</SelectItem>
+                        <SelectItem value="penta_PMPPP">Pentavô PMPPP</SelectItem>
+                        <SelectItem value="penta_PMPPM">Pentavó PMPPM</SelectItem>
+                        <SelectItem value="penta_PMPMP">Pentavô PMPMP</SelectItem>
+                        <SelectItem value="penta_PMPMM">Pentavó PMPMM</SelectItem>
+                        <SelectItem value="penta_PMMPP">Pentavô PMMPP</SelectItem>
+                        <SelectItem value="penta_PMPMM_2">Pentavó PMMPM</SelectItem>
+                        <SelectItem value="penta_PMMMP">Pentavô PMMMP</SelectItem>
+                        <SelectItem value="penta_PMMMM">Pentavó PMMMM</SelectItem>
+                        <SelectItem value="penta_MPPPP">Pentavô MPPPP</SelectItem>
+                        <SelectItem value="penta_MPPPM">Pentavó MPPPM</SelectItem>
+                        <SelectItem value="penta_MPPMP">Pentavô MPPMP</SelectItem>
+                        <SelectItem value="penta_MPPMM">Pentavó MPPMM</SelectItem>
+                        <SelectItem value="penta_MPMPM">Pentavó MPMPM</SelectItem>
+                        <SelectItem value="penta_MPMMP">Pentavô MPMMP</SelectItem>
+                        <SelectItem value="penta_MPMMM">Pentavó MPMMM</SelectItem>
+                        <SelectItem value="penta_MMPPP">Pentavô MMPPP</SelectItem>
+                        <SelectItem value="penta_MMPPM">Pentavó MMPPM</SelectItem>
+                        <SelectItem value="penta_MMPMP">Pentavô MMPMP</SelectItem>
+                        <SelectItem value="penta_MMPMM">Pentavó MMPMM</SelectItem>
+                        <SelectItem value="penta_MMMPP">Pentavô MMMPP</SelectItem>
+                        <SelectItem value="penta_MMMPM">Pentavó MMMPM</SelectItem>
+                        <SelectItem value="penta_MMMMP">Pentavô MMMMP</SelectItem>
+                        <SelectItem value="penta_MMMMM">Pentavó MMMMM</SelectItem>
+                        
+                        {/* 6ª Geração - Hexavós (64) - Primeira metade */}
+                        <SelectItem value="hexa_PPPPPP">Hexavô PPPPPP</SelectItem>
+                        <SelectItem value="hexa_PPPPPM">Hexavó PPPPPM</SelectItem>
+                        <SelectItem value="hexa_PPPPMP">Hexavô PPPPMP</SelectItem>
+                        <SelectItem value="hexa_PPPPMM">Hexavó PPPPMM</SelectItem>
+                        <SelectItem value="hexa_PPPMPP">Hexavô PPPMPP</SelectItem>
+                        <SelectItem value="hexa_PPPMPM">Hexavó PPPMPM</SelectItem>
+                        <SelectItem value="hexa_PPPMMP">Hexavô PPPMMP</SelectItem>
+                        <SelectItem value="hexa_PPPMMM">Hexavó PPPMMM</SelectItem>
+                        <SelectItem value="hexa_PPMPPP">Hexavô PPMPPP</SelectItem>
+                        <SelectItem value="hexa_PPMPPM">Hexavó PPMPPM</SelectItem>
+                        <SelectItem value="hexa_PPPMMP_2">Hexavô PPMMPM</SelectItem>
+                        <SelectItem value="hexa_PPMMPM">Hexavó PPMMPP</SelectItem>
+                        <SelectItem value="hexa_PPMMMP">Hexavô PPMMMP</SelectItem>
+                        <SelectItem value="hexa_PPMMMM">Hexavó PPMMMM</SelectItem>
+                        <SelectItem value="hexa_PMPPPP">Hexavô PMPPPP</SelectItem>
+                        <SelectItem value="hexa_PMPPPM">Hexavó PMPPPM</SelectItem>
+                        <SelectItem value="hexa_PMPMPM">Hexavô PMPMPM</SelectItem>
+                        <SelectItem value="hexa_PMPMMP">Hexavô PMPMMP</SelectItem>
+                        <SelectItem value="hexa_PMPMMP_2">Hexavô PMPPMP</SelectItem>
+                        <SelectItem value="hexa_PMPMMM">Hexavô PMPMMM</SelectItem>
+                        <SelectItem value="hexa_PMMPPP">Hexavô PMMPPP</SelectItem>
+                        <SelectItem value="hexa_PMMPPM">Hexavô PMMPPM</SelectItem>
+                        <SelectItem value="hexa_PMMPMP">Hexavô PMMPMP</SelectItem>
+                        <SelectItem value="hexa_PMMPMM">Hexavô PMMPMM</SelectItem>
+                        <SelectItem value="hexa_PMMMPP">Hexavô PMMMPP</SelectItem>
+                        <SelectItem value="hexa_PMMMPM">Hexavô PMMMPM</SelectItem>
+                        <SelectItem value="hexa_PMMMMP">Hexavô PMMMMP</SelectItem>
+                        <SelectItem value="hexa_PMMMMM">Hexavó PMMMMM</SelectItem>
+                        
+                        {/* 6ª Geração - Hexavós (64) - Segunda metade */}
+                        <SelectItem value="hexa_MPPPPP">Hexavô MPPPPP</SelectItem>
+                        <SelectItem value="hexa_MPPPPM">Hexavó MPPPPM</SelectItem>
+                        <SelectItem value="hexa_MPPPMP">Hexavô MPPPMP</SelectItem>
+                        <SelectItem value="hexa_MPPPMM">Hexavó MPPPMM</SelectItem>
+                        <SelectItem value="hexa_MPPMPP">Hexavô MPPMPP</SelectItem>
+                        <SelectItem value="hexa_MPPMPM">Hexavó MPPMPM</SelectItem>
+                        <SelectItem value="hexa_MPPMMP">Hexavô MPPMMP</SelectItem>
+                        <SelectItem value="hexa_MPPMMM">Hexavó MPPMMM</SelectItem>
+                        <SelectItem value="hexa_MPMPPP">Hexavô MPMPPP</SelectItem>
+                        <SelectItem value="hexa_MPMPPM">Hexavó MPMPPM</SelectItem>
+                        <SelectItem value="hexa_MPMPMP">Hexavô MPMPMP</SelectItem>
+                        <SelectItem value="hexa_MPMPMM">Hexavô MPMPMM</SelectItem>
+                        <SelectItem value="hexa_MPMMPM">Hexavô MPMMPM</SelectItem>
+                        <SelectItem value="hexa_MPMMPP">Hexavô MPMMPP</SelectItem>
+                        <SelectItem value="hexa_MPMMMP">Hexavô MPMMMP</SelectItem>
+                        <SelectItem value="hexa_MPMMMM">Hexavó MPMMMM</SelectItem>
+                        <SelectItem value="hexa_MMPPPP">Hexavô MMPPPP</SelectItem>
+                        <SelectItem value="hexa_MMPPPM">Hexavó MMPPPM</SelectItem>
+                        <SelectItem value="hexa_MMPPMP">Hexavô MMPPMP</SelectItem>
+                        <SelectItem value="hexa_MMPPMM">Hexavó MMPPMM</SelectItem>
+                        <SelectItem value="hexa_MMPMPP">Hexavô MMPMPP</SelectItem>
+                        <SelectItem value="hexa_MMPMPM">Hexavô MMPMPM</SelectItem>
+                        <SelectItem value="hexa_MMPMMP">Hexavô MMPMMP</SelectItem>
+                        <SelectItem value="hexa_MMPMMM">Hexavô MMPMMM</SelectItem>
+                        <SelectItem value="hexa_MMMPPP">Hexavô MMMPPP</SelectItem>
+                        <SelectItem value="hexa_MMMPPM">Hexavó MMMPPM</SelectItem>
+                        <SelectItem value="hexa_MMMMPM">Hexavó MMMMPM</SelectItem>
+                        <SelectItem value="hexa_MMMMPP">Hexavô MMMMPP</SelectItem>
+                        <SelectItem value="hexa_MMMMPM_2">Hexavó MMMMPM</SelectItem>
+                        <SelectItem value="hexa_MMMMMP">Hexavô MMMMMP</SelectItem>
+                        <SelectItem value="hexa_MMMMMM">Hexavó MMMMMM</SelectItem>
+                        
+                        {/* 7ª Geração - Heptavós (128) - Parte 1/4 */}
+                        <SelectItem value="hepta_PPPPPPP">Heptavô PPPPPPP</SelectItem>
+                        <SelectItem value="hepta_PPPPPPM">Heptavó PPPPPPM</SelectItem>
+                        <SelectItem value="hepta_PPPPPMP">Heptavô PPPPPMP</SelectItem>
+                        <SelectItem value="hepta_PPPPMMM">Heptavó PPPPMMM</SelectItem>
+                        <SelectItem value="hepta_PPPPMPP">Heptavô PPPPMPP</SelectItem>
+                        <SelectItem value="hepta_PPPPMPM">Heptavó PPPPMPM</SelectItem>
+                        <SelectItem value="hepta_PPPPMMP">Heptavô PPPPMMP</SelectItem>
+                        <SelectItem value="hepta_PPPPPMM_2">Heptavó PPPPMM</SelectItem>
+                        <SelectItem value="hepta_PPPMPPP">Heptavô PPPMPPP</SelectItem>
+                        <SelectItem value="hepta_PPPMPPM">Heptavó PPPMPPM</SelectItem>
+                        <SelectItem value="hepta_PPPMPMP">Heptavô PPPMPMP</SelectItem>
+                        <SelectItem value="hepta_PPPMPMM">Heptavó PPPMPMM</SelectItem>
+                        <SelectItem value="hepta_PPPMMPP">Heptavô PPPMMPP</SelectItem>
+                        <SelectItem value="hepta_PPPMMPM_2">Heptavó PPPMMPM</SelectItem>
+                        <SelectItem value="hepta_PPPMMMP">Heptavô PPPMMMP</SelectItem>
+                        <SelectItem value="hepta_PPPMMMM">Heptavó PPPMMMM</SelectItem>
+                        <SelectItem value="hepta_PPMPPPP">Heptavô PPMPPPP</SelectItem>
+                        <SelectItem value="hepta_PPMPPPM">Heptavó PPMPPPM</SelectItem>
+                        <SelectItem value="hepta_PPMPPMP">Heptavô PPMPPMP</SelectItem>
+                        <SelectItem value="hepta_PPMPPMM">Heptavó PPMPPMM</SelectItem>
+                        <SelectItem value="hepta_PPPMPPM">Heptavó PPPMPPM</SelectItem>
+                        <SelectItem value="hepta_PPMPPMP_2">Heptavô PPPMPPM</SelectItem>
+                        <SelectItem value="hepta_PPMMPMP">Heptavô PPMMPMP</SelectItem>
+                        <SelectItem value="hepta_PPMMPMM">Heptavó PPMMPMM</SelectItem>
+                        <SelectItem value="hepta_PPMMPPP">Heptavô PPMMPPP</SelectItem>
+                        <SelectItem value="hepta_PPMMPPM">Heptavó PPMMPPM</SelectItem>
+                        <SelectItem value="hecta_PPMMMPM">Heptavô PPMMMPM</SelectItem>
+                        <SelectItem value="hepta_PPMMMMPP">Heptavó PPMMMMP</SelectItem>
+                        <SelectItem value="hepta_PPMMMMMM">Heptavó PPMMMMM</SelectItem>
+                        <SelectItem value="hepta_PMPPPPP">Heptavô PMPPPPP</SelectItem>
+                        <SelectItem value="hepta_PMPPPPM">Heptavó PMPPPPM</SelectItem>
+                        <SelectItem value="hepta_PMPPPMP">Heptavô PMPPPMP</SelectItem>
+                        <SelectItem value="hepta_PMPPPMM">Heptavó PMPPPMM</SelectItem>
+                        <SelectItem value="hepta_PMPMPPP">Heptavô PMPMPPP</SelectItem>
+                        <SelectItem value="hepta_PMPMPPM">Heptavó PMPMPPM</SelectItem>
+                        <SelectItem value="hepta_PMPMPMP">Heptavô PMPMPMP</SelectItem>
+                        <SelectItem value="hepta_PMPMPMM">Heptavó PMPMPMM</SelectItem>
+                        
+                        {/* 7ª Geração - Heptavós (128) - Parte 2/4 */}
+                        <SelectItem value="hepta_PMPMMPP">Heptavô PMPMMPP</SelectItem>
+                        <SelectItem value="hepta_PMPMMPM">Heptavó PMPMMPM</SelectItem>
+                        <SelectItem value="hepta_PMPMMMP">Heptavô PMPMMMP</SelectItem>
+                        <SelectItem value="hepta_PMPMMMM">Heptavó PMPMMMM</SelectItem>
+                        <SelectItem value="hepta_PMMPPPP">Heptavô PMMPPPP</SelectItem>
+                        <SelectItem value="hepta_PMMPPPM">Heptavó PMMPPPM</SelectItem>
+                        <SelectItem value="hepta_PMMPPMP">Heptavô PMMPPMP</SelectItem>
+                        <SelectItem value="hepta_PMMPPMM">Heptavó PMMPPMM</SelectItem>
+                        <SelectItem value="hepta_PMMPMPP">Heptavô PMMPMPP</SelectItem>
+                        <SelectItem value="hepta_PMMPMPM">Heptavó PMMPMPM</SelectItem>
+                        <SelectItem value="hepta_PMMPMMP">Heptavô PMMPMMP</SelectItem>
+                        <SelectItem value="hepta_PMMPMMM">Heptavó PMMPMMM</SelectItem>
+                        <SelectItem value="hepta_PMMMPPP">Heptavô PMMMPPP</SelectItem>
+                        <SelectItem value="hepta_PMMMPPM">Heptavó PMMMPPM</SelectItem>
+                        <SelectItem value="hepta_PMMMMPM">Heptavó PMMMMPM</SelectItem>
+                        <SelectItem value="hepta_PMMMMPP">Heptavó PMMMMPP</SelectItem>
+                        <SelectItem value="hepta_PMMMMPM_2">Heptavó PMMMMPM</SelectItem>
+                        <SelectItem value="hepta_PMMMMMP">Heptavó PMMMMMP</SelectItem>
+                        <SelectItem value="hepta_PMMMMMMM">Heptavó PMMMMMM</SelectItem>
+                        <SelectItem value="hepta_MPPPPPP">Heptavô MPPPPPP</SelectItem>
+                        <SelectItem value="hepta_MPPPPPM">Heptavó MPPPPPM</SelectItem>
+                        <SelectItem value="hepta_MPPPMPM">Heptavô MPPPMPM</SelectItem>
+                        <SelectItem value="hepta_MPPPPMM">Heptavó MPPPPMM</SelectItem>
+                        <SelectItem value="hepta_MPPPMPP">Heptavô MPPPMPP</SelectItem>
+                        <SelectItem value="hepta_MPPPMPM_2">Heptavó MPPPMPM</SelectItem>
+                        <SelectItem value="hepta_MPPPMMP">Heptavô MPPPMMP</SelectItem>
+                        <SelectItem value="hepta_MPPPPMMM">Heptavó MPPPPMM</SelectItem>
+                        <SelectItem value="hepta_MPPMPPP">Heptavô MPPMPPP</SelectItem>
+                        <SelectItem value="hepta_MPPMPPM">Heptavó MPPMPPM</SelectItem>
+                        <SelectItem value="hepta_MPPMPMP">Heptavô MPPMPMP</SelectItem>
+                        <SelectItem value="hepta_MPPMPMM">Heptavó MPPMPMM</SelectItem>
+                        <SelectItem value="hepta_MPPMMPP">Heptavô MPPMMPP</SelectItem>
+                        <SelectItem value="hepta_MPPMMPM_2">Heptavó MPPMMPM</SelectItem>
+                        <SelectItem value="hepta_MPPMMMP">Heptavô MPPMMMP</SelectItem>
+                        <SelectItem value="hepta_MPPMMMM">Heptavó MPPMMMM</SelectItem>
+                        
+                        {/* 7ª Geração - Heptavós (128) - Parte 3/4 */}
+                        <SelectItem value="hepta_MPMPPPP">Heptavô MPMPPPP</SelectItem>
+                        <SelectItem value="hepta_MPMPPPM">Heptavó MPMPPPM</SelectItem>
+                        <SelectItem value="hepta_MPMPPMP">Heptavô MPMPPMP</SelectItem>
+                        <SelectItem value="hepta_MPMPPMM">Heptavó MPMPPMM</SelectItem>
+                        <SelectItem value="hepta_MPMPMPP">Heptavô MPMPMPP</SelectItem>
+                        <SelectItem value="hepta_MPMPMPM">Heptavó MPMPMPM</SelectItem>
+                        <SelectItem value="hepta_MPMPMMP">Heptavô MPMPMMP</SelectItem>
+                        <SelectItem value="hepta_MPMPMMM">Heptavó MPMPMMM</SelectItem>
+                        <SelectItem value="hepta_MPMMPPP">Heptavô MPMMPPP</SelectItem>
+                        <SelectItem value="hepta_MPMMPMP">Heptavó MPMMPMP</SelectItem>
+                        <SelectItem value="hepta_MPMMPMM">Heptavó MPMMPMM</SelectItem>
+                        <SelectItem value="hepta_MPMMPPP">Heptavô MPMMPPP</SelectItem>
+                        <SelectItem value="hepta_MPMMPPM">Heptavó MPMMPPM</SelectItem>
+                        <SelectItem value="hepta_MPMMMPM">Heptavô MPMMMPM</SelectItem>
+                        <SelectItem value="hepta_MPMMMMM">Heptavó MPMMMMM</SelectItem>
+                        <SelectItem value="hepta_MMPPPPP">Heptavô MMPPPPP</SelectItem>
+                        <SelectItem value="hepta_MMPPPPM">Heptavó MMPPPPM</SelectItem>
+                        <SelectItem value="hepta_MMPPMPM">Heptavô MMPPMPM</SelectItem>
+                        <SelectItem value="hepta_MMPPMMM">Heptavó MMPPMMM</SelectItem>
+                        <SelectItem value="hepta_MMPMPPP">Heptavô MMPMPPP</SelectItem>
+                        <SelectItem value="hepta_MMPMPPM">Heptavó MMPMPPM</SelectItem>
+                        <SelectItem value="hepta_MMPMPMP">Heptavô MMPMPMP</SelectItem>
+                        <SelectItem value="hepta_MMPMPMM">Heptavó MMPMPMM</SelectItem>
+                        <SelectItem value="hepta_MMPMPPP_2">Heptavô MMPMPPP</SelectItem>
+                        <SelectItem value="hepta_MMPMPPM_2">Heptavó MMPMPPM</SelectItem>
+                        <SelectItem value="hepta_MMPMMMP">Heptavô MMPMMMP</SelectItem>
+                        <SelectItem value="hepta_MMPMMMM">Heptavó MMPMMMM</SelectItem>
+                        <SelectItem value="hepta_MMMPPPP">Heptavô MMMPPPP</SelectItem>
+                        <SelectItem value="hepta_MMMPPPM">Heptavó MMMPPPM</SelectItem>
+                        <SelectItem value="hepta_MMMPPMP">Heptavô MMMPPMP</SelectItem>
+                        <SelectItem value="hepta_MMMPPMM">Heptavó MMMPPMM</SelectItem>
+                        <SelectItem value="hepta_MMMMPMP">Heptavô MMMMPMP</SelectItem>
+                        <SelectItem value="hepta_MMMMPPP">Heptavô MMMMPPP</SelectItem>
+                        <SelectItem value="hepta_MMMMPPM">Heptavó MMMMPPM</SelectItem>
+                        <SelectItem value="hepta_MMMMMPM">Heptavó MMMMMPM</SelectItem>
+                        <SelectItem value="hepta_MMMMMPP">Heptavó MMMMMPP</SelectItem>
+                        <SelectItem value="hepta_MMMMMMP">Heptavô MMMMMMP</SelectItem>
+                        
+                        {/* 7ª Geração - Heptavós (128) - Parte 4/4 */}
+                        <SelectItem value="hepta_MMMMMMM">Heptavó MMMMMMM</SelectItem>
                         
                         {/* Ancestral Europeu/Emigrante */}
                         <SelectItem value="ancestral">Ancestral Europeu / Emigrante</SelectItem>
