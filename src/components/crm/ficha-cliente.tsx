@@ -615,6 +615,18 @@ export default function FichaCliente() {
     carregarCliente();
   }, [clienteId]);
 
+  // Auto-save: salva automaticamente quando o cliente muda (debounce de 2 segundos)
+  useEffect(() => {
+    if (!cliente || !cliente.id) return;
+    
+    const timeoutId = setTimeout(() => {
+      updateCliente(cliente.id, cliente);
+      console.log('Auto-save: dados salvos automaticamente');
+    }, 2000);
+    
+    return () => clearTimeout(timeoutId);
+  }, [cliente]);
+
   async function handleSalvar() {
     if (!cliente) return;
     
@@ -1349,13 +1361,14 @@ export default function FichaCliente() {
                       <label className="text-xs font-medium text-green-800">Data</label>
                       <Input
                         placeholder="DD/MM/YYYY"
-                        value={formNo.nascimento.data || ""}
+                        value={formNo.nascimento?.data || ""}
                         onChange={(e) => {
                           const newData = formatarData(e.target.value);
-                          const hasAllFields = newData && formNo.nascimento.local;
+                          const currentNasc = formNo.nascimento || { data: '', local: '', tipo: 'nascimento' as const, completo: false };
+                          const hasAllFields = newData && currentNasc.local;
                           setFormNo({
                             ...formNo,
-                            nascimento: {...formNo.nascimento!, data: newData, completo: !!hasAllFields}
+                            nascimento: {...currentNasc, data: newData, completo: !!hasAllFields}
                           });
                         }}
                         maxLength={10}
@@ -1366,12 +1379,13 @@ export default function FichaCliente() {
                       <label className="text-xs font-medium text-green-800">Local</label>
                       <Input
                         placeholder="Cidade, País"
-                        value={formNo.nascimento.local || ""}
+                        value={formNo.nascimento?.local || ""}
                         onChange={(e) => {
-                          const hasAllFields = formNo.nascimento.data && e.target.value;
+                          const currentNasc = formNo.nascimento || { data: '', local: '', tipo: 'nascimento' as const, completo: false };
+                          const hasAllFields = currentNasc.data && e.target.value;
                           setFormNo({
                             ...formNo,
-                            nascimento: {...formNo.nascimento!, local: e.target.value, completo: !!hasAllFields}
+                            nascimento: {...currentNasc, local: e.target.value, completo: !!hasAllFields}
                           });
                         }}
                         className="border-green-200 focus:border-green-400"
@@ -1396,13 +1410,16 @@ export default function FichaCliente() {
                         onDadosExtraidos={(dados) => {
                           console.log('Dados extraídos Nascimento:', dados);
                           
+                          // Garantir que nascimento existe com valores padrão
+                          const currentNasc = formNo.nascimento || { data: '', local: '', tipo: 'nascimento' as const, completo: false };
+                          
                           // Atualizar formNo com os dados extraídos
                           const novoRegistroCivil = {
-                            ...(formNo.nascimento.registroCivil || {}),
-                            cartorio: dados.cartorio || formNo.nascimento.registroCivil?.cartorio || '',
-                            livro: dados.livro || formNo.nascimento.registroCivil?.livro || '',
-                            folha: dados.folha || formNo.nascimento.registroCivil?.folha || '',
-                            termo: dados.termo || formNo.nascimento.registroCivil?.termo || '',
+                            ...(currentNasc.registroCivil || {}),
+                            cartorio: dados.cartorio || currentNasc.registroCivil?.cartorio || '',
+                            livro: dados.livro || currentNasc.registroCivil?.livro || '',
+                            folha: dados.folha || currentNasc.registroCivil?.folha || '',
+                            termo: dados.termo || currentNasc.registroCivil?.termo || '',
                           };
                           
                           // Verificar se está completo
@@ -1411,10 +1428,10 @@ export default function FichaCliente() {
                           setFormNo({
                             ...formNo,
                             nascimento: {
-                              ...formNo.nascimento!,
-                              local: dados.municipio ? `${dados.municipio}${dados.uf ? '/' + dados.uf : ''}` : formNo.nascimento.local,
+                              ...currentNasc,
+                              local: dados.municipio ? `${dados.municipio}${dados.uf ? '/' + dados.uf : ''}` : currentNasc.local,
                               registroCivil: novoRegistroCivil,
-                              completo: !!(formNo.nascimento.data && temTodosCampos)
+                              completo: !!(currentNasc.data && temTodosCampos)
                             }
                           });
                         }}
@@ -1425,14 +1442,17 @@ export default function FichaCliente() {
                           <label className="text-[10px] text-muted-foreground">Cartório</label>
                           <Input
                             placeholder="Nome do cartório"
-                            value={formNo.nascimento.registroCivil?.cartorio || ''}
-                            onChange={(e) => setFormNo({
-                              ...formNo,
-                              nascimento: {
-                                ...formNo.nascimento!,
-                                registroCivil: {...(formNo.nascimento.registroCivil || {}), cartorio: e.target.value}
-                              }
-                            })}
+                            value={formNo.nascimento?.registroCivil?.cartorio || ''}
+                            onChange={(e) => {
+                              const currentNasc = formNo.nascimento || { data: '', local: '', tipo: 'nascimento' as const, completo: false };
+                              setFormNo({
+                                ...formNo,
+                                nascimento: {
+                                  ...currentNasc,
+                                  registroCivil: {...(currentNasc.registroCivil || {}), cartorio: e.target.value}
+                                }
+                              });
+                            }}
                             className="h-8 text-xs"
                           />
                         </div>
@@ -1440,14 +1460,17 @@ export default function FichaCliente() {
                           <label className="text-[10px] text-muted-foreground">Livro</label>
                           <Input
                             placeholder="Nº do livro"
-                            value={formNo.nascimento.registroCivil?.livro || ''}
-                            onChange={(e) => setFormNo({
-                              ...formNo,
-                              nascimento: {
-                                ...formNo.nascimento!,
-                                registroCivil: {...(formNo.nascimento.registroCivil || {}), livro: e.target.value}
-                              }
-                            })}
+                            value={formNo.nascimento?.registroCivil?.livro || ''}
+                            onChange={(e) => {
+                              const currentNasc = formNo.nascimento || { data: '', local: '', tipo: 'nascimento' as const, completo: false };
+                              setFormNo({
+                                ...formNo,
+                                nascimento: {
+                                  ...currentNasc,
+                                  registroCivil: {...(currentNasc.registroCivil || {}), livro: e.target.value}
+                                }
+                              });
+                            }}
                             className="h-8 text-xs"
                           />
                         </div>
@@ -1455,14 +1478,17 @@ export default function FichaCliente() {
                           <label className="text-[10px] text-muted-foreground">Folha</label>
                           <Input
                             placeholder="Nº da folha"
-                            value={formNo.nascimento.registroCivil?.folha || ''}
-                            onChange={(e) => setFormNo({
-                              ...formNo,
-                              nascimento: {
-                                ...formNo.nascimento!,
-                                registroCivil: {...(formNo.nascimento.registroCivil || {}), folha: e.target.value}
-                              }
-                            })}
+                            value={formNo.nascimento?.registroCivil?.folha || ''}
+                            onChange={(e) => {
+                              const currentNasc = formNo.nascimento || { data: '', local: '', tipo: 'nascimento' as const, completo: false };
+                              setFormNo({
+                                ...formNo,
+                                nascimento: {
+                                  ...currentNasc,
+                                  registroCivil: {...(currentNasc.registroCivil || {}), folha: e.target.value}
+                                }
+                              });
+                            }}
                             className="h-8 text-xs"
                           />
                         </div>
@@ -1470,14 +1496,17 @@ export default function FichaCliente() {
                           <label className="text-[10px] text-muted-foreground">Termo</label>
                           <Input
                             placeholder="Nº do termo"
-                            value={formNo.nascimento.registroCivil?.termo || ''}
-                            onChange={(e) => setFormNo({
-                              ...formNo,
-                              nascimento: {
-                                ...formNo.nascimento!,
-                                registroCivil: {...(formNo.nascimento.registroCivil || {}), termo: e.target.value}
-                              }
-                            })}
+                            value={formNo.nascimento?.registroCivil?.termo || ''}
+                            onChange={(e) => {
+                              const currentNasc = formNo.nascimento || { data: '', local: '', tipo: 'nascimento' as const, completo: false };
+                              setFormNo({
+                                ...formNo,
+                                nascimento: {
+                                  ...currentNasc,
+                                  registroCivil: {...(currentNasc.registroCivil || {}), termo: e.target.value}
+                                }
+                              });
+                            }}
                             className="h-8 text-xs"
                           />
                         </div>
