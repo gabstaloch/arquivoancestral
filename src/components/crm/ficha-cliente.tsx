@@ -1559,14 +1559,14 @@ export default function FichaCliente() {
                       <label className="text-xs font-medium text-pink-800">Data</label>
                       <Input
                         placeholder="DD/MM/YYYY"
-                        value={formNo.casamento.data || ""}
+                        value={formNo.casamento?.data || ""}
                         onChange={(e) => {
                           const newData = formatarData(e.target.value);
                           const rc = formNo.casamento.registroCivil;
                           const hasRegistry = rc?.cartorio || rc?.livro || rc?.folha || rc?.termo;
                           setFormNo({
                             ...formNo,
-                            casamento: {...formNo.casamento!, data: newData, completo: !!(newData && hasRegistry)}
+                            casamento: {...formNo.casamento || { data: "", local: "", tipo: "casamento" as const, completo: false }, data: newData, completo: !!(newData && hasRegistry)}
                           });
                         }}
                         maxLength={10}
@@ -1577,8 +1577,8 @@ export default function FichaCliente() {
                       <label className="text-xs font-medium text-pink-800">Local</label>
                       <Input
                         placeholder="Cidade, País"
-                        value={formNo.casamento.local || ""}
-                        onChange={(e) => setFormNo({...formNo, casamento: {...formNo.casamento!, local: e.target.value}})}
+                        value={formNo.casamento?.local || ""}
+                        onChange={(e) => setFormNo({...formNo, casamento: {...formNo.casamento || { data: "", local: "", tipo: "casamento" as const, completo: false }, local: e.target.value}})}
                         className="border-pink-200 focus:border-pink-400"
                       />
                     </div>
@@ -1614,7 +1614,7 @@ export default function FichaCliente() {
                           setFormNo({
                             ...formNo,
                             casamento: {
-                              ...formNo.casamento!,
+                              ...formNo.casamento || { data: "", local: "", tipo: "casamento" as const, completo: false },
                               local: dados.municipio ? `${dados.municipio}${dados.uf ? '/' + dados.uf : ''}` : formNo.casamento.local,
                               registroCivil: novoRegistroCivil,
                               completo: !!(formNo.casamento.data && temTodosCampos)
@@ -1635,7 +1635,7 @@ export default function FichaCliente() {
                               setFormNo({
                                 ...formNo,
                                 casamento: {
-                                  ...formNo.casamento!,
+                                  ...formNo.casamento || { data: "", local: "", tipo: "casamento" as const, completo: false },
                                   registroCivil: newRc,
                                   completo: !!(formNo.casamento.data && hasAnyField)
                                 }
@@ -1655,7 +1655,7 @@ export default function FichaCliente() {
                               setFormNo({
                                 ...formNo,
                                 casamento: {
-                                  ...formNo.casamento!,
+                                  ...formNo.casamento || { data: "", local: "", tipo: "casamento" as const, completo: false },
                                   registroCivil: newRc,
                                   completo: !!(formNo.casamento.data && hasAnyField)
                                 }
@@ -1675,7 +1675,7 @@ export default function FichaCliente() {
                               setFormNo({
                                 ...formNo,
                                 casamento: {
-                                  ...formNo.casamento!,
+                                  ...formNo.casamento || { data: "", local: "", tipo: "casamento" as const, completo: false },
                                   registroCivil: newRc,
                                   completo: !!(formNo.casamento.data && hasAnyField)
                                 }
@@ -1695,7 +1695,7 @@ export default function FichaCliente() {
                               setFormNo({
                                 ...formNo,
                                 casamento: {
-                                  ...formNo.casamento!,
+                                  ...formNo.casamento || { data: "", local: "", tipo: "casamento" as const, completo: false },
                                   registroCivil: newRc,
                                   completo: !!(formNo.casamento.data && hasAnyField)
                                 }
@@ -1753,14 +1753,14 @@ export default function FichaCliente() {
                       <label className="text-xs font-medium text-gray-800">Data</label>
                       <Input
                         placeholder="DD/MM/YYYY"
-                        value={formNo.obito.data || ""}
+                        value={formNo.obito?.data || ""}
                         onChange={(e) => {
                           const newData = formatarData(e.target.value);
                           const rc = formNo.obito.registroCivil;
                           const hasRegistry = rc?.cartorio || rc?.livro || rc?.folha || rc?.termo;
                           setFormNo({
                             ...formNo,
-                            obito: {...formNo.obito!, data: newData, completo: !!(newData && hasRegistry)}
+                            obito: {...formNo.obito || { data: "", local: "", tipo: "obito" as const, completo: false }, data: newData, completo: !!(newData && hasRegistry)}
                           });
                         }}
                         maxLength={10}
@@ -1771,8 +1771,8 @@ export default function FichaCliente() {
                       <label className="text-xs font-medium text-gray-800">Local</label>
                       <Input
                         placeholder="Cidade, País"
-                        value={formNo.obito.local || ""}
-                        onChange={(e) => setFormNo({...formNo, obito: {...formNo.obito!, local: e.target.value}})}
+                        value={formNo.obito?.local || ""}
+                        onChange={(e) => setFormNo({...formNo, obito: {...formNo.obito || { data: "", local: "", tipo: "obito" as const, completo: false }, local: e.target.value}})}
                         className="border-gray-300 focus:border-gray-500"
                       />
                     </div>
@@ -1808,7 +1808,7 @@ export default function FichaCliente() {
                           setFormNo({
                             ...formNo,
                             obito: {
-                              ...formNo.obito!,
+                              ...formNo.obito || { data: "", local: "", tipo: "obito" as const, completo: false },
                               local: dados.municipio ? `${dados.municipio}${dados.uf ? '/' + dados.uf : ''}` : formNo.obito.local,
                               registroCivil: novoRegistroCivil,
                               completo: !!(formNo.obito.data && temTodosCampos)
@@ -1829,7 +1829,7 @@ export default function FichaCliente() {
                               setFormNo({
                                 ...formNo,
                                 obito: {
-                                  ...formNo.obito!,
+                                  ...formNo.obito || { data: "", local: "", tipo: "obito" as const, completo: false },
                                   registroCivil: newRc,
                                   completo: !!(formNo.obito.data && hasAnyField)
                                 }
@@ -1849,7 +1849,7 @@ export default function FichaCliente() {
                               setFormNo({
                                 ...formNo,
                                 obito: {
-                                  ...formNo.obito!,
+                                  ...formNo.obito || { data: "", local: "", tipo: "obito" as const, completo: false },
                                   registroCivil: newRc,
                                   completo: !!(formNo.obito.data && hasAnyField)
                                 }
@@ -1869,7 +1869,7 @@ export default function FichaCliente() {
                               setFormNo({
                                 ...formNo,
                                 obito: {
-                                  ...formNo.obito!,
+                                  ...formNo.obito || { data: "", local: "", tipo: "obito" as const, completo: false },
                                   registroCivil: newRc,
                                   completo: !!(formNo.obito.data && hasAnyField)
                                 }
@@ -1889,7 +1889,7 @@ export default function FichaCliente() {
                               setFormNo({
                                 ...formNo,
                                 obito: {
-                                  ...formNo.obito!,
+                                  ...formNo.obito || { data: "", local: "", tipo: "obito" as const, completo: false },
                                   registroCivil: newRc,
                                   completo: !!(formNo.obito.data && hasAnyField)
                                 }
